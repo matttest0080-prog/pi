@@ -8,7 +8,7 @@
 #   ./install-pi-on-pi2.sh --dry-run    # print what would happen, change nothing
 #   ./install-pi-on-pi2.sh --check-only # no installs, just inspect what is already there
 #
-# Facts this is built on (measured 2026-09-21; re-verified 2026-10-06 for 1.0.4):
+# Facts this is built on (measured 2026-09-21; re-verified 2026-10-06 for 1.0.4 and 2026-10-20 for 1.3.0):
 #   * nodejs.org ships linux-armv7l for every v22 release (35/35, incl. all >= 22.19, latest
 #     v22.23.2). v23 and later do NOT ship armv7 - so pin 22.
 #   * earendil-works/pi publishes no armv7 binary: v1.3.0 assets are linux-x64, linux-arm64,

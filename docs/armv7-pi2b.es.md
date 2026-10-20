@@ -10,6 +10,7 @@ solo añade dos pequeños cambios "habilitadores" para que «compilar desde el c
 
 - Placa objetivo: Raspberry Pi 2 Model B (armv7l, 4×900 MHz, 921 MiB de RAM), Raspbian GNU/Linux 13 (trixie)
 - Medición: **2026-10-06 con `@earendil-works/pi-coding-agent@1.0.4`** (ciclo anterior: 2026-10-05, 1.0.2)
+- Estado de sincronización: sigue upstream v1.3.0; la re-verificación física de 1.3.0 en Pi 2B pasó el 2026-10-20 (ver docs/armv7-pi2b.md).
 - Registro sin procesar: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) (con
   [guía en español](armv7-pi2b-verification.es.md))
 - La evidencia son **mediciones reales de hardware**, no razonamientos estáticos: 11/11 comprobaciones

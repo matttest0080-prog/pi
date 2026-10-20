@@ -7,8 +7,8 @@
 小修改（見下方「本分支的修改」）。
 
 - 目標板：Raspberry Pi 2 Model B（armv7l, 4×900 MHz, 921 MiB RAM），Raspbian GNU/Linux 13 (trixie)
-- 實測日期：**2026-10-06（`@earendil-works/pi-coding-agent@1.0.4`）**｜前一輪 2026-10-05 為 1.0.2
-- 同步狀態：本分支已跟隨 upstream v1.3.0；`scripts/pi2-armv7/` 預設改為 1.3.0，**1.3.0 的實機重測尚未執行**，下方數字仍是 1.0.4 的實測值。
+- 實測日期：**2026-10-20（`@earendil-works/pi-coding-agent@1.3.0`）**｜上一輪 2026-10-06 為 1.0.4
+- 同步狀態：本分支已跟隨 upstream v1.3.0；`scripts/pi2-armv7/` 預設 1.3.0，並於 2026-10-20 在 Pi2B 完成 1.3.0 實機驗收（11/11）。
 - 原始記錄：[`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)（導讀：[英](armv7-pi2b-verification.en.md)／[簡中](armv7-pi2b-verification.zh-CN.md)／[日](armv7-pi2b-verification.ja.md)／[韓](armv7-pi2b-verification.ko.md)／[西](armv7-pi2b-verification.es.md)）
 - 其他語言版本見本頁最上方語言列
 - 證據是**實機量測**，不是靜態推論：驗收 11/11 通過
@@ -36,12 +36,12 @@ native reads are unavailable」——所以 armv7 上這是**設計允許的降�
 | 身份 | uid 1000，**全程未用 sudo**（安裝到 `$HOME`） |
 | Node | **v22.23.2**（官方 `linux-armv7l` tarball，26,338,176 bytes） |
 | `node:sqlite` | **可用** → session backend 不需要原生模組 |
-| CLI | **`pi --version` → 1.0.4**；`pi --help` 正常輸出 |
-| npm 安裝 | `added 4 packages, removed 5 packages, and changed 117 packages in 4m`（npm 10.9.8） |
+| CLI | **`pi --version` → 1.3.0**；`pi --help` 正常輸出 |
+| npm 安裝 | `removed 3 packages, and changed 118 packages in 3m`（npm 10.9.8） |
 | 附帶 prebuild | 只有 `darwin-arm64|x64`、`linux-arm64|x64`、`win32-arm64|x64` —— **沒有 `linux-arm`（armv7）** |
-| 啟動耗時 | `pi --version` **5.09 s**（安裝當次）／重測 4.80–4.99 s（Pi2B 冷啟動） |
-| 記憶體 | `node` 基準 RSS **39 MiB**；安裝時整機可用 718 MiB，未 OOM |
-| 磁碟 | Node 187 MB ＋ pi 套件 165 MB（`$HOME` 尚有 5.5 GB） |
+| 啟動耗時 | `pi --version` **5.00 s**（安裝當次）／重測 4.84–4.97 s（Pi2B 冷啟動） |
+| 記憶體 | `node` 基準 RSS **39 MiB**；安裝時整機可用 728 MiB，未 OOM |
+| 磁碟 | Node 187 MB ＋ pi 套件 154 MB（`$HOME` 尚有 4.1 GB） |
 
 > 真實模型回合：**已於 2026-10-01 在板子上實機驗證**（板子自己跑 `llama-server`，不需要 PC、
 > 也不需要外部 API），做法與實測值見第 7 節。pi 0.99.2 的內建本機路徑仍是 llama.cpp router
@@ -61,7 +61,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.3.0 after this sync; 1.0.4 in the measurement table
+pi --version                 # 1.3.0
 
 # 3) 持久化（加進 ~/.bashrc）
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc

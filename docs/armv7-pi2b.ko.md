@@ -9,6 +9,7 @@
 
 - 대상 보드: Raspberry Pi 2 Model B(armv7l, 4×900 MHz, 921 MiB RAM), Raspbian GNU/Linux 13 (trixie)
 - 계측일: **2026-10-06(`@earendil-works/pi-coding-agent@1.0.4`)**｜이전 사이클은 2026-10-05의 1.0.2
+- 동기화 상태: upstream v1.3.0을 따릅니다. 2026-10-20에 Pi 2B에서 1.3.0 실기 검증을 통과했습니다(docs/armv7-pi2b.md 참조).
 - 원본 로그: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)([한국어 해설](armv7-pi2b-verification.ko.md) 포함)
 - 근거는 **실기 계측**이며 정적 추론이 아닙니다: 승인 검사 11/11 통과
 
