@@ -9,6 +9,7 @@ architecture (see [What this fork changes](#4-what-this-fork-changes)).
 
 - Target board: Raspberry Pi 2 Model B (armv7l, 4x900 MHz, 921 MiB RAM), Raspbian GNU/Linux 13 (trixie)
 - Measured: **2026-10-06 with `@earendil-works/pi-coding-agent@1.0.4`** (previous cycle: 2026-10-05, 1.0.2)
+- Sync status: this branch now follows upstream v1.3.0. `scripts/pi2-armv7/` defaults to 1.3.0, but the **1.3.0 board re-verification is still pending**; the numbers below are the 1.0.4 hardware run.
 - Raw board log: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) — with an English guide to
   the same log: [`armv7-pi2b-verification.en.md`](armv7-pi2b-verification.en.md)
 - The evidence is **hardware measurement, not static reasoning**: 11/11 acceptance checks passed
@@ -72,7 +73,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.0.4
+pi --version                 # 1.3.0 after this sync; 1.0.4 in the measurement table
 
 # 3) Persist it (append to ~/.bashrc)
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc

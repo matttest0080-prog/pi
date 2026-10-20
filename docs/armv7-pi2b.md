@@ -8,6 +8,7 @@
 
 - 目標板：Raspberry Pi 2 Model B（armv7l, 4×900 MHz, 921 MiB RAM），Raspbian GNU/Linux 13 (trixie)
 - 實測日期：**2026-10-06（`@earendil-works/pi-coding-agent@1.0.4`）**｜前一輪 2026-10-05 為 1.0.2
+- 同步狀態：本分支已跟隨 upstream v1.3.0；`scripts/pi2-armv7/` 預設改為 1.3.0，**1.3.0 的實機重測尚未執行**，下方數字仍是 1.0.4 的實測值。
 - 原始記錄：[`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)（導讀：[英](armv7-pi2b-verification.en.md)／[簡中](armv7-pi2b-verification.zh-CN.md)／[日](armv7-pi2b-verification.ja.md)／[韓](armv7-pi2b-verification.ko.md)／[西](armv7-pi2b-verification.es.md)）
 - 其他語言版本見本頁最上方語言列
 - 證據是**實機量測**，不是靜態推論：驗收 11/11 通過
@@ -60,7 +61,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.0.4
+pi --version                 # 1.3.0 after this sync; 1.0.4 in the measurement table
 
 # 3) 持久化（加進 ~/.bashrc）
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
