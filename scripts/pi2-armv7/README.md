@@ -22,3 +22,26 @@ Notes that matter on this board:
   starts".
 - `~/.local` is shared with anything else installed for the user there — remove only the pi pieces when
   rolling back.
+
+## Release tags
+
+Every fork release is an annotated tag on the synced `main` plus a GitHub release carrying the source
+tree and `SHA256SUMS`. The last column is the npm package that was actually installed and verified on
+the board at that tag — that is what `install-pi-on-pi2.sh` pins by default:
+
+| Fork tag | Fork commit | Upstream tag | Upstream commit | Board-verified package |
+| --- | --- | --- | --- | --- |
+| `v1.0.4` | `ccfb4aa80` | `v1.0.4` | `7c10bd433` | 1.0.4 (2026-10-06) |
+| `v1.3.0` | `b0d4b0f86` | `v1.3.0` | `71023aec1` | 1.3.0 (2026-10-20) |
+| `v1.4.0` | `ebe43370c` | `v1.4.0` | `4a080252f` | 1.4.0 (2026-10-27) |
+
+The fork reuses upstream's version numbers, so a local `v1.x.y` here is **the fork's** annotated tag —
+its message records the upstream tag's commit. Upstream tags are therefore shadowed by name; fetch
+upstream without tags (`git fetch upstream --no-tags`, or `git fetch upstream main`) so a later
+`git fetch --tags` cannot overwrite them:
+
+```sh
+git fetch upstream main --no-tags
+git merge upstream/main
+git push origin main
+```
