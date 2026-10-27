@@ -137,3 +137,19 @@ Two findings that made the difference and are worth keeping next to these number
 `rc=0`（コールド 771 s、ウォーム 721 s、タイムアウトなし）で、ツール使用 1 回のあとに
 `stopReason: stop` の最終メッセージで終了しています。速度は約 0.99–1.65 tok/s。生の出力は
 [armv7-pi2b-verification.md](armv7-pi2b-verification.md) に逐語で記録しています。
+
+## 2026-10-27：`pi` 1.4.0（上流同期後の最初のサイクル）
+
+同じ `scripts/pi2-armv7/pi2-pi-agent.sh all` を、今回は
+`PI_PKG=@earendil-works/pi-coding-agent@1.4.0` で同じ Pi 2B に対して実行しました。1.3.0 からの
+インプレース更新なので npm は `added 3 packages, and changed 118 packages in 2m` のみ、fail-closed の
+検証は 11/11、`pi --version` → 1.4.0 が 4.96 秒。その後の独立再測定は 5.40 s / 4.95 s / 4.97 s、
+node RSS 39 MiB、空き 612 MiB、`$HOME` の空き 4.0 GB（1.3.0 の回は 4.84–5.00 s だったので
+1.4.0 で遅くなってはいません）。パッケージは 156 MB で、`linux-arm` プリビルドは同梱されません。
+
+ボード自足のモデル 1 ターンも再計測しました。コールドは `rc=0`・638 秒（prompt 1,446 トークンを
+2.45 tok/s、出力 8 トークン）でしたが、0.5B モデルはコマンドをテキストとして返し、ツール呼び出しに
+なりませんでした。明確な指示を足したウォームのターンでは一周完走しています——
+`toolCall bash({"command":"uname -m --","timeout":0})` → `toolResult` のエラー
+（"Invalid timeout: must be a finite number of seconds"）→ 最終テキスト、`stopReason: stop`、88 秒。
+生の出力は [armv7-pi2b-verification.md](armv7-pi2b-verification.md) にあります。

@@ -7,8 +7,8 @@
 不被架构卡住（见下方「本分支的修改」）。
 
 - 目标板：Raspberry Pi 2 Model B（armv7l, 4×900 MHz, 921 MiB RAM），Raspbian GNU/Linux 13 (trixie)
-- 实测日期：**2026-10-06（`@earendil-works/pi-coding-agent@1.0.4`）**｜上一轮 2026-10-05 为 1.0.2
-- 同步状态：已跟随 upstream v1.3.0；2026-10-20 已在 Pi 2B 完成 1.3.0 实机验收（见 docs/armv7-pi2b.md）。
+- 实测日期：**2026-10-27（`@earendil-works/pi-coding-agent@1.4.0`）**｜上一轮 2026-10-20 为 1.3.0、2026-10-06 为 1.0.4
+- 同步状态：已跟随 upstream v1.4.0（`upstream/main` 合并，落后 0）；2026-10-27 已在 Pi 2B 完成 1.4.0 实机验收（11/11，见 docs/armv7-pi2b.md）。
 - 原始记录：[`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)（[简体中文导读](armv7-pi2b-verification.zh-CN.md)）
 - 证据是**实机量测**，不是静态推论：验收 11/11 通过
 
@@ -20,14 +20,14 @@
 | --- | --- |
 | **Node 22 有官方 armv7l 构建，Node 23+ 没有** | `nodejs.org/dist/index.json`：v22 全部 **35/35** 版含 `linux-armv7l`（含 ≥ 22.19 的 11 版，最新 v22.23.2）；最近 12 个版本（v23+）皆无。本 repo 要求 `engines.node >= 22.19.0` → **只能在 v22 线满足** |
 | **官方预编译二进制不含 armv7** | release 资产只有 `linux-x64`／`linux-arm64`／`darwin-x64|arm64`／`windows-x64|arm64`，`build-binaries.yml` 的平台判断同样只列这四个 → 官方 tarball **不可用** |
-| **npm 包路线没有原生障碍** | `@earendil-works/pi-coding-agent@1.0.4`：无 `os`/`cpu` 限制、已含预打包 CLI（`dist/bundle/*.js`）、依赖为纯 JS 或 wasm（`photon-node` 内含 `photon_rs_bg.wasm`）、`canvas` 只在 `devDependencies`、session backend 用 Node 内建 `node:sqlite` |
+| **npm 包路线没有原生障碍** | `@earendil-works/pi-coding-agent@1.4.0`：无 `os`/`cpu` 限制、已含预打包 CLI（`dist/bundle/*.js`）、依赖为纯 JS 或 wasm（`photon-node` 内含 `photon_rs_bg.wasm`）、`canvas` 只在 `devDependencies`、session backend 用 Node 内建 `node:sqlite` |
 
 唯一的功能减损：TUI 的原生 X11／剪贴板 helper（`linux-platform-x11.node`）只有 x64/arm64 预编译，
 且加载器 `packages/tui/src/native-platform.ts` 对其他架构直接返回 `undefined`。
 `packages/tui/native/linux/README.md` 自己写明「Coding-agent falls back to command-line tools when
 native reads are unavailable」——所以在 armv7 上这是**设计允许的降级**，不会崩溃，只是少了剪贴板／图片集成。
 
-在板上用已安装的 1.0.4 实测：
+在板上用已安装的 1.4.0 实测：
 
 ```text
 process.arch = arm, process.platform = linux
@@ -43,14 +43,14 @@ getNativePlatformHelper() -> undefined
 | 身份 | uid 1000，**全程未用 sudo**（安装到 `$HOME`） |
 | Node | **v22.23.2**（官方 `linux-armv7l` tarball，26,338,176 bytes） |
 | `node:sqlite` | **可用** → session backend 不需要原生模块 |
-| CLI | **`pi --version` → 1.0.4**；`pi --help` 正常输出 |
-| npm 安装 | `added 4 packages, removed 5 packages, and changed 117 packages in 4m`（npm 10.9.8） |
+| CLI | **`pi --version` → 1.4.0**；`pi --help` 正常输出 |
+| npm 安装 | `added 3 packages, and changed 118 packages in 2m`（npm 10.9.8，1.3.0 → 1.4.0 升级） |
 | 附带 prebuild | 只有 `darwin-arm64|x64`、`linux-arm64|x64`、`win32-arm64|x64` —— **没有 `linux-arm`（armv7）** |
-| 启动耗时 | `pi --version` **4.80–4.99 s**（Pi2B 冷启动，4 次量测） |
-| 内存 | `node` 基准 RSS **39 MiB**；安装时整机可用 718 MiB，未 OOM |
-| 磁盘 | Node 187 MB ＋ pi 包 165 MB（`$HOME` 尚有 5.5 GB） |
+| 启动耗时 | `pi --version` **4.96 s**（安装当次）／重测 4.95–5.40 s（Pi2B 冷启动） |
+| 内存 | `node` 基准 RSS **39 MiB**；安装时整机可用 701 MiB，未 OOM |
+| 磁盘 | Node 187 MB ＋ pi 包 156 MB（`$HOME` 尚有 4.1 GB） |
 
-> 真实模型回合：**已于 2026-10-01 在板子上实机验证**（板子自己跑 `llama-server`，不需要 PC 或
+> 真实模型回合：**已于 2026-10-01 在板子上实机验证、2026-10-27 以 1.4.0 重验通过**（板子自己跑 `llama-server`，不需要 PC 或
 > 外部 API），做法与实测值见第 8 节。0.99.2 的内建本机路径仍是 `LLAMA_BASE_URL` 指向的
 > llama.cpp router（不是 LM Studio 的 OpenAI 兼容 API）。
 
@@ -68,7 +68,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.0.4
+pi --version                 # 1.4.0
 
 # 3) 持久化（加进 ~/.bashrc）
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -132,9 +132,8 @@ scripts/pi2-armv7/pi2-pi-agent.sh verify docs/armv7-pi2b-verification.md
 - **安装过程中抓到两个真 bug，都是被关卡挡下、不是事后发现**：官方 Node tarball 解开的目录名保留了 `v`
   前缀（`node-v22.23.2-linux-armv7l`，我一开始漏了 `v`）；以及我最初写「node_modules 不得有任何 `.node`」
   是错的——包本来就会附其他平台的 prebuild。正确的不变量是「**没有 armv7 专属 prebuild** 且 CLI 能启动」。
-- **1.0.4 的包元数据重新查过**：仍无 `os`/`cpu` 限制，`pi-tui` 仍只附 6 个 x64/arm64 prebuild（没有 `linux-arm`）。
-- **上游同步不影响 ARMv7 工作**：合并上游 `28dcce2ba`（v1.0.4）后，20 个 ARMv7 delta 文件中 19 个逐位元不变
-  （唯一差异是 `.gitignore`，上游本轮也改了它：fork 原内容完整保留并并入上游那两行；`packages/tui/src/native-platform.ts` 也保留 `arm` 许可）。
+- **1.4.0 的包元数据重新查过**：仍无 `os`/`cpu` 限制，`pi-tui` 仍只附 6 个 x64/arm64 prebuild（没有 `linux-arm`）。
+- **上游同步不影响 ARMv7 工作**：合并 upstream `fbad9bea7`（157 个 commit，v1.3.0 → 1.4.0）后，ARMv7 相关 delta 文件（12 份文档、4 支脚本、README 段落、两处程式码修改）逐位元不变；本轮唯一被上游改动的是 `.gitignore`（新增 `.pi/settings.json`），fork 的 `scripts/pi2-armv7/cache/` 行完整保留。
 
 ## 8. 板子自足的真实模型回合（已实机验证，2026-10-01）
 

@@ -140,3 +140,20 @@ Se repitió la medición local en la placa con `pi` 1.0.4 instalado, sobre el mi
 placa. Ambos turnos devolvieron `rc=0` (frío 771 s, caliente 721 s — sin timeouts) y terminaron en un
 mensaje final con `stopReason: stop` tras una ronda de uso de herramientas, a ~0.99–1.65 tok/s. La salida
 en bruto está registrada literalmente en [armv7-pi2b-verification.md](armv7-pi2b-verification.md).
+
+## 2026-10-27: `pi` 1.4.0 (primer ciclo tras la sincronización con upstream)
+
+La misma ejecución de `scripts/pi2-armv7/pi2-pi-agent.sh all`, esta vez con
+`PI_PKG=@earendil-works/pi-coding-agent@1.4.0` en la misma Pi 2B: actualización en el sitio desde 1.3.0,
+así que npm solo hizo `added 3 packages, and changed 118 packages in 2m`; la aceptación fail-closed pasó
+11/11 y `pi --version` → 1.4.0 en 4,96 s. Tres repeticiones independientes después dieron
+5,40 s / 4,95 s / 4,97 s, RSS de `node` 39 MiB, 612 MiB disponibles y 4,0 GB libres (el ciclo de 1.3.0
+midió 4,84–5,00 s, así que 1.4.0 no es más lento). El paquete ocupa 156 MB y sigue sin incluir ningún
+precompilado `linux-arm`.
+
+También se repitió el turno de modelo local en la placa: el turno en frío dio `rc=0` en 638 s
+(prompt de 1.446 tokens a 2,45 tok/s, 8 tokens de salida) pero el modelo de 0,5B repitió el comando como
+texto en vez de llamar a una herramienta; un turno en caliente con instrucción explícita completó el
+circuito: `toolCall bash({"command":"uname -m --","timeout":0})` → error en `toolResult`
+("Invalid timeout: must be a finite number of seconds") → texto final, `stopReason: stop`, 88 s.
+La salida en bruto está en [armv7-pi2b-verification.md](armv7-pi2b-verification.md).

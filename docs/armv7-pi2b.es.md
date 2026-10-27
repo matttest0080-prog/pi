@@ -9,8 +9,8 @@ solo añade dos pequeños cambios "habilitadores" para que «compilar desde el c
 [Qué cambia esta rama](#4-qué-cambia-esta-rama)).
 
 - Placa objetivo: Raspberry Pi 2 Model B (armv7l, 4×900 MHz, 921 MiB de RAM), Raspbian GNU/Linux 13 (trixie)
-- Medición: **2026-10-06 con `@earendil-works/pi-coding-agent@1.0.4`** (ciclo anterior: 2026-10-05, 1.0.2)
-- Estado de sincronización: sigue upstream v1.3.0; la re-verificación física de 1.3.0 en Pi 2B pasó el 2026-10-20 (ver docs/armv7-pi2b.md).
+- Medición: **2026-10-27 con `@earendil-works/pi-coding-agent@1.4.0`** (ciclos anteriores: 2026-10-20, 1.3.0; 2026-10-06, 1.0.4)
+- Estado de sincronización: sigue upstream v1.4.0 (`upstream/main` fusionado, 0 por detrás); la verificación física de 1.4.0 en Pi 2B pasó el 2026-10-27 (11/11, ver docs/armv7-pi2b.md).
 - Registro sin procesar: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) (con
   [guía en español](armv7-pi2b-verification.es.md))
 - La evidencia son **mediciones reales de hardware**, no razonamientos estáticos: 11/11 comprobaciones
@@ -23,7 +23,7 @@ solo añade dos pequeños cambios "habilitadores" para que «compilar desde el c
 | --- | --- |
 | **Node 22 tiene compilaciones oficiales para armv7l; Node 23+ no** | `nodejs.org/dist/index.json`: las **35/35** versiones de v22 incluyen `linux-armv7l` (incluidas las 11 que son >= 22.19; la última es v22.23.2); ninguna de las 12 versiones más recientes (v23+) la incluye. Este repositorio exige `engines.node >= 22.19.0` → **solo la línea v22 lo cumple** |
 | **Los binarios precompilados oficiales no incluyen armv7** | Los recursos de la versión son solo `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64`, y `build-binaries.yml` contempla exactamente esos cuatro casos → el tarball oficial **no sirve** |
-| **La ruta del paquete npm no tiene obstáculo nativo** | `@earendil-works/pi-coding-agent@1.0.4`: **sin restricción `os`/`cpu`**, incluye una CLI ya empaquetada (`dist/bundle/*.js`), sus dependencias son JS puro o wasm (`photon-node` incluye `photon_rs_bg.wasm`), `canvas` solo está en `devDependencies` y el backend de sesión usa el `node:sqlite` integrado |
+| **La ruta del paquete npm no tiene obstáculo nativo** | `@earendil-works/pi-coding-agent@1.4.0`: **sin restricción `os`/`cpu`**, incluye una CLI ya empaquetada (`dist/bundle/*.js`), sus dependencias son JS puro o wasm (`photon-node` incluye `photon_rs_bg.wasm`), `canvas` solo está en `devDependencies` y el backend de sesión usa el `node:sqlite` integrado |
 
 La única pérdida funcional: el helper nativo X11/portapapeles de la TUI (`linux-platform-x11.node`)
 solo existe precompilado para x64/arm64, y el cargador `packages/tui/src/native-platform.ts` devuelve
@@ -32,7 +32,7 @@ solo existe precompilado para x64/arm64, y el cargador `packages/tui/src/native-
 **degradación prevista y documentada**: nada se cae, solo se pierde la integración con portapapeles e
 imágenes.
 
-Medido en la placa con el paquete 1.0.4 ya instalado:
+Medido en la placa con el paquete 1.4.0 ya instalado:
 
 ```text
 process.arch = arm, process.platform = linux
@@ -48,14 +48,15 @@ getNativePlatformHelper() -> undefined
 | Identidad | uid 1000, **sin sudo en ningún momento** (todo en `$HOME`) |
 | Node | **v22.23.2** (tarball oficial `linux-armv7l`, 26.338.176 bytes) |
 | `node:sqlite` | **disponible** → el backend de sesión no necesita módulos nativos |
-| CLI | **`pi --version` → 1.0.4**; `pi --help` imprime con normalidad |
-| Instalación npm | `added 4 packages, removed 5 packages, and changed 117 packages in 4m` (npm 10.9.8) |
+| CLI | **`pi --version` → 1.4.0**; `pi --help` imprime con normalidad |
+| Instalación npm | `added 3 packages, and changed 118 packages in 2m` (npm 10.9.8, actualización 1.3.0 → 1.4.0) |
 | Precompilados incluidos | solo `darwin-arm64|x64`, `linux-arm64|x64`, `win32-arm64|x64` — **ningún `linux-arm` (armv7)** |
-| Arranque | `pi --version` **4,80–4,99 s** (arranque en frío de la Pi2B, cuatro ejecuciones) |
-| Memoria | RSS base de `node` **39 MiB**; 718 MiB disponibles durante la instalación, sin OOM |
-| Disco | Node 187 MB + paquete pi 165 MB (5,5 GB libres en `$HOME`) |
+| Arranque | `pi --version` **4,96 s** (instalación), **4,95–5,40 s** en repeticiones |
+| Memoria | RSS base de `node` **39 MiB**; 701 MiB disponibles durante la instalación, sin OOM |
+| Disco | Node 187 MB + paquete pi 156 MB (4,1 GB libres en `$HOME`) |
 
-> Turno real de modelo: **verificado en la placa el 2026-10-01** (la Pi ejecuta su propio `llama-server`;
+> Turno real de modelo: **verificado en la placa el 2026-10-01 y re-verificado con 1.4.0 el 2026-10-27**
+> (la Pi ejecuta su propio `llama-server`;
 > sin PC y sin API externa). Receta y mediciones: sección 8. La ruta local integrada de pi 0.99.2 sigue
 > siendo el router de llama.cpp vía `LLAMA_BASE_URL` (no usa la API compatible con OpenAI de LM Studio).
 
@@ -73,7 +74,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.0.4
+pi --version                 # 1.4.0
 
 # 3) Persistencia (añadir a ~/.bashrc)
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -143,12 +144,13 @@ scripts/pi2-armv7/pi2-pi-agent.sh verify docs/armv7-pi2b-verification.md
   «`node_modules` no debe contener ningún `.node`», lo cual es incorrecto: el paquete incluye
   legítimamente precompilados de otras plataformas. El invariante correcto es «**no existe un
   precompilado específico de ARMv7** *y* la CLI arranca».
-- **Los metadatos del paquete 1.0.4 se revalidaron**: sigue sin restricción `os`/`cpu` y `pi-tui` sigue
+- **Los metadatos del paquete 1.4.0 se revalidaron**: sigue sin restricción `os`/`cpu` y `pi-tui` sigue
   incluyendo exactamente seis precompilados (x64/arm64 para darwin/linux/win32), sin `linux-arm`.
-- **La sincronización con upstream no toca el trabajo de ARMv7**: tras fusionar upstream `28dcce2ba`
-  (v1.0.4), 19 de los 20 archivos del delta de ARMv7 son idénticos byte a byte; la única diferencia es
-  `.gitignore`, que upstream también editó en este ciclo (se conserva el contenido del fork y se
-  incorporan las dos líneas de upstream), y `packages/tui/src/native-platform.ts` conserva el permiso `arm`.
+- **La sincronización con upstream no toca el trabajo de ARMv7**: tras fusionar upstream `fbad9bea7`
+  (157 commits, v1.3.0 → 1.4.0), los archivos del delta de ARMv7 (12 documentos, 4 scripts, el apartado
+  del README y los dos cambios de código) son idénticos byte a byte. Lo único que upstream modificó en
+  este ciclo es `.gitignore` (añade `.pi/settings.json`), y la línea `scripts/pi2-armv7/cache/` del fork
+  se conserva.
 
 ## 8. Turnos de modelo locales a la placa (verificado en hardware real, 2026-10-01)
 

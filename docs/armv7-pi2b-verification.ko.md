@@ -136,3 +136,18 @@ Two findings that made the difference and are worth keeping next to these number
 (콜드 771 s, 웜 721 s, 타임아웃 없음)이며, 도구 사용 1회 뒤 `stopReason: stop`인 최종 메시지로
 끝났습니다. 속도는 약 0.99–1.65 tok/s. 원시 출력은
 [armv7-pi2b-verification.md](armv7-pi2b-verification.md)에 그대로 기록했습니다.
+
+## 2026-10-27: `pi` 1.4.0 (업스트림 동기화 후 첫 사이클)
+
+같은 `scripts/pi2-armv7/pi2-pi-agent.sh all`을 이번에는
+`PI_PKG=@earendil-works/pi-coding-agent@1.4.0`으로 같은 Pi 2B에서 실행했습니다. 1.3.0에서의 제자리
+업그레이드라 npm은 `added 3 packages, and changed 118 packages in 2m`만 수행했고, fail-closed 검증은
+11/11, `pi --version` → 1.4.0이 4.96초였습니다. 이후 독립 재측정은 5.40 s / 4.95 s / 4.97 s,
+node RSS 39 MiB, 여유 612 MiB, `$HOME` 여유 4.0 GB(1.3.0 회차는 4.84–5.00 s였으므로 1.4.0이
+느려지지 않았습니다). 패키지는 156 MB이며 `linux-arm` 사전 빌드는 여전히 없습니다.
+
+보드 자체 모델 1턴도 다시 측정했습니다. 콜드는 `rc=0`·638초(prompt 1,446 토큰 2.45 tok/s, 출력 8
+토큰)였지만 0.5B 모델이 명령을 텍스트로 되풀이해 도구 호출을 하지 않았습니다. 명시적 지시를 준
+웜 턴에서는 한 바퀴를 완주했습니다 — `toolCall bash({"command":"uname -m --","timeout":0})` →
+`toolResult` 오류("Invalid timeout: must be a finite number of seconds") → 최종 텍스트,
+`stopReason: stop`, 88초. 원시 출력은 [armv7-pi2b-verification.md](armv7-pi2b-verification.md)에 있습니다.

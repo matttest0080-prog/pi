@@ -135,3 +135,17 @@ Two findings that made the difference and are worth keeping next to these number
 装上 `pi` 1.0.4 后，在同一块板子自足的 router 上又跑了一次。两个回合都是 `rc=0`（冷回合 771 s、
 暖回合 721 s，都没有撞上限），各自在一轮工具使用后以 `stopReason: stop` 的最终消息收尾，
 速率约 0.99–1.65 tok/s。原始输出逐字记录在 [armv7-pi2b-verification.md](armv7-pi2b-verification.md)。
+
+## 2026-10-27：`pi` 1.4.0（上游同步后的第一轮）
+
+同一条 `scripts/pi2-armv7/pi2-pi-agent.sh all`，这次 `PI_PKG=@earendil-works/pi-coding-agent@1.4.0`、
+同一块 Pi 2B：就地升級（1.3.0 → 1.4.0，npm 只 `added 3 packages, and changed 118 packages in 2m`）、
+fail-closed 验收 11/11、`pi --version` → 1.4.0 用时 4.96 s。之后三次独立重测为 5.40 s / 4.95 s /
+4.97 s，node RSS 39 MiB、可用 612 MiB、`$HOME` 尚余 4.0 GB；1.3.0 那一轮是 4.84–5.00 s，所以 1.4.0
+没有变慢。包体 156 MB，仍然没有 `linux-arm` prebuild。
+
+板子自足的模型回合也重跑了：冷回合 `rc=0`、638 s（prompt 1,446 tokens @2.45 tok/s、输出 8 tokens），
+但 0.5B 模型把命令当文字吐出、没有发出工具调用；暖回合加上明确指令后走完一圈——
+`toolCall bash({"command":"uname -m --","timeout":0})` → `toolResult` 报错
+（"Invalid timeout: must be a finite number of seconds"）→ 最终文字、`stopReason: stop`，88 s。
+原始输出见 [armv7-pi2b-verification.md](armv7-pi2b-verification.md)。

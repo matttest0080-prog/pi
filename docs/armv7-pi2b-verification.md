@@ -199,3 +199,134 @@ prompt eval time =  413433.22 ms /  681 tokens (607.10 ms per token,   1.65 toke
 提示 → 工具 → 最終文字，速率約 0.99–1.65 tok/s。
 
 量測檔：板上 `~/measure104.out`，12,617 bytes，`sha256 b2f9803d37828e84…`（PC 上保留的副本同雜湊）。
+
+## 2026-10-27：`pi` 1.4.0（upstream 同步後的第一輪）
+
+`scripts/pi2-armv7/pi2-pi-agent.sh all`（`PI_PKG=@earendil-works/pi-coding-agent@1.4.0`，由 PC 驅動同一塊
+Pi 2B）的原始輸出，2026-10-27。板子上原本是 1.3.0，這次是就地升級，所以 npm 只 `added 3 packages`。
+唯一的改動是把家目錄路徑換成 `/home/<user>`：
+
+```text
+=== 0) 基本環境
+    uname -m = armv7l  |  Raspbian GNU/Linux 13 (trixie)
+    mem: 921 MiB total, 701 MiB available
+    disk $HOME: 4.1G free
+  ✓ 架構是 armv7l（Pi2B）
+  ✓ 以一般使用者執行（uid 1000），全程安裝到 $HOME，不需要 sudo
+  ✓ 下載工具：curl
+
+=== 1) Node 22 armv7l（官方 tarball，不使用 NodeSource／不用 v23+）
+  ✓ 已有 /home/<user>/opt/node22/bin/node：v22.23.2
+  ✓ Node v22.23.2 ✓（armv7 官方建置線）
+  ✓ node:sqlite 可用（session backend 不需要原生模組）
+
+=== 2) 安裝 pi coding agent（用 npm 套件，不用官方 arm64/x64 tarball）
+    npm 10.9.8  |  目標 prefix: /home/<user>/.local
+npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+
+added 3 packages, and changed 118 packages in 2m
+
+9 packages are looking for funding
+  run `npm fund` for details
+  ✓ 已安裝 @earendil-works/pi-coding-agent@1.4.0 到 /home/<user>/.local
+
+=== 3) 驗收（可量測的項目）
+  ✓ pi 執行檔存在：/home/<user>/.local/bin/pi
+    pi --version → 1.4.0
+    pi --help   → pi - AI coding assistant with read, bash, edit, write tools  Usage: 
+  套件內附的 prebuild（其他平台，armv7 不會載入）：
+    @earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-arm64/darwin-platform.node
+    @earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui/native/darwin/prebuilds/darwin-x64/darwin-platform.node
+    @earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-arm64/linux-platform-x11.node
+    @earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui/native/linux/prebuilds/linux-x64/linux-platform-x11.node
+    @earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-arm64/win32-platform.node
+    @earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui/native/win32/prebuilds/win32-x64/win32-platform.node
+  ✓ 沒有 linux-arm（armv7）的 prebuild（armv7 走 JS 路徑 ✓）
+  ✓ （真正的證明：pi --version 已在上面正常輸出 ✓）
+
+=== 4) 量測（給日後比對用）
+    pi --version 耗時 4.96 s
+    node RSS 基準: 39 MiB
+    磁碟：Node 187M｜pi 套件 156M（注意：/home/<user>/.local 可能與其他工具共用，勿整包刪）
+
+=== 5) 接下來（可選，需要你的 API key 或本機端點）
+    export PATH="/home/<user>/opt/node22/bin:/home/<user>/.local/bin:$PATH"     # 加進 ~/.bashrc 才會持久
+    pi --version
+    # 真實回合（需要 API 金鑰；本機端點走 pi 內建的 llama.cpp router，不吃 LM Studio 的 OpenAI 相容 API）
+    LLAMA_BASE_URL=http://<同一網段的機器>:8080 pi "hello"   # 由 pi 的 llama.cpp 擴充使用
+
+完成。記錄檔請用 --check-only 重跑輸出存證。
+```
+
+驗收（fail-closed 的 `verify`，同一份記錄）：
+
+```text
+=== 驗收：scripts/pi2-armv7/logs/latest.log
+  ✓ 架構是 armv7l
+  ✓ 以一般使用者執行（非 root）
+  ✓ Node 是 v22 系列
+  ✓ node:sqlite 可用
+  ✓ pi 執行檔存在
+  ✓ pi --version 有輸出
+  ✓ 沒有 armv7 專屬的 prebuild
+  ✓ 沒有以 root 身分執行
+  ✓ 沒有任何非 v22 的 Node 痕跡
+  ✓ 沒有意外出現 .node
+  ✓ 沒有中止（fail-closed）
+
+✅ 全部驗收項目通過（實機量測，非推論）
+```
+
+安裝後三次獨立重測（同一塊板子、冷啟動）：
+
+```text
+  run1: 5.40 s   (1.4.0)
+  run2: 4.95 s   (1.4.0)
+  run3: 4.97 s   (1.4.0)
+  node RSS: 39 MiB
+  free: 612 MiB available
+  disk HOME: 4.0G
+```
+
+run1 略高是因為它緊接在上一輪 `pi`／`node` 結束後量測（冷啟動抖動）；1.3.0 那輪的區間是 4.84–5.00 s，
+所以 **1.4.0 沒有變慢**。
+
+## 板子自足的真實模型回合（2026-10-27，`pi` 1.4.0）
+
+同一塊板子、同一個板子自足的 router（`llama-server --models-preset ~/llama/models.ini`，
+`127.0.0.1:8080`），這次跑的是 1.4.0。兩輪都用 `pi --mode json … < /dev/null` 驅動，`rc=0`：
+
+```text
+=== board: llama-server --version ===
+  version: 0.3.0-dev (build 10734, commit 121201a7b)
+  built with GNU 11.4.0 for Linux arm
+
+=== router: GET /models ===
+  qwen2.5-0.5b-instruct-q4_k_m   status=unloaded   source=preset
+
+=== turn #1 (cold, model loads on first request) ===
+  rc=0  wall=638 s
+  prompt eval time = 590253.49 ms / 1446 tokens ( 408.20 ms per token,   2.45 tokens per second)
+         eval time =   5496.81 ms /    8 tokens ( 785.26 ms per token,   1.27 tokens per second)
+  stopReason: stop | usage: input 1446 output 8
+  assistant text: "uname -m ; echo $?"
+  # no tool call: the 0.5B model echoed the command as text (model behaviour, not the harness)
+
+=== turn #2 (warm, explicit tool instruction) ===
+  rc=0  wall=88 s
+  assistant -> toolCall: bash({"command":"uname -m --","timeout":0})   stopReason: toolUse
+  toolResult: "Invalid timeout: must be a finite number of seconds"    isError: true, 23 ms
+  assistant -> text: 'The command "uname -m --" failed because the timeout was not a finite number of seconds.'
+  stopReason: stop | usage: input 29 output 21 cacheRead 1489
+  prompt eval time = 15720.93 ms / 29 tokens (1.84 tokens per second)
+         eval time = 16004.17 ms / 21 tokens (1.25 tokens per second)
+  graphs reused = 51   # prefix cache hit: the 1,446-token prompt was not re-evaluated
+```
+
+**結論**：1.4.0 在板子上把「提示 → 工具呼叫 → 工具結果 → 最終文字」整圈走完（回合 2），
+回合 1 另外證明 prompt 組裝（1,446 tokens）與串流回應正常。回合 1 沒有工具呼叫是 0.5B 模型的行為，
+不是 harness 的問題。`timeout: 0` 被 `resolveTimeoutMs()`（`packages/coding-agent/src/core/tools/bash.ts:30`，
+1.3.0 起就存在）擋下，錯誤訊息照正常路徑回饋給模型——這正好證明的是錯誤路徑也走通。
+
+量測檔留在板上：`~/measure140-turn1.json`（22,630 bytes）、`~/measure140-turn2.json`
+（34,682 bytes，`sha256 9450ee983aa7c4fa…`）。router 在量測後已停止。

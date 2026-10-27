@@ -140,3 +140,21 @@ A second board-local run was taken with `pi` 1.0.4 installed, on the same board-
 returned `rc=0` (cold 771 s, warm 721 s — no timeout), each ending in a final message with
 `stopReason: stop` after one round of tool use, at ~0.99–1.65 tok/s. The raw output is recorded verbatim
 in [armv7-pi2b-verification.md](armv7-pi2b-verification.md).
+
+## 2026-10-27: `pi` 1.4.0 (first cycle after the upstream sync)
+
+The same `scripts/pi2-armv7/pi2-pi-agent.sh all` run, this time with
+`PI_PKG=@earendil-works/pi-coding-agent@1.4.0` on the same Pi 2B: install (an in-place upgrade from
+1.3.0, so npm only `added 3 packages, and changed 118 packages in 2m`), the fail-closed acceptance
+step (11/11) and `pi --version` → 1.4.0 in 4.96 s. Three independent re-runs afterwards measured
+5.40 s / 4.95 s / 4.97 s, node RSS 39 MiB, 612 MiB available, 4.0 GB free — 1.3.0 measured 4.84–5.00 s,
+so 1.4.0 did not get slower. The package is 156 MB and still ships no `linux-arm` prebuild.
+
+A board-local model turn was taken again with 1.4.0 on the same on-board router
+(`qwen2.5-0.5b-instruct-q4_k_m`, `llama-server 0.3.0-dev build 10734`): a cold turn returned `rc=0` in
+638 s (prompt 1,446 tokens at 2.45 tok/s, output 8 tokens) but the 0.5B model echoed the command as
+text instead of calling a tool; a warm turn with an explicit instruction then completed the full loop —
+`toolCall bash({"command":"uname -m --","timeout":0})` → `toolResult` error
+("Invalid timeout: must be a finite number of seconds") → final assistant text, `stopReason: stop`,
+88 s, 1.84 tok/s prompt / 1.25 tok/s generation. Raw output is in
+[armv7-pi2b-verification.md](armv7-pi2b-verification.md).
