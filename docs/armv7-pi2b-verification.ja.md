@@ -153,3 +153,13 @@ node RSS 39 MiB、空き 612 MiB、`$HOME` の空き 4.0 GB（1.3.0 の回は 4.
 `toolCall bash({"command":"uname -m --","timeout":0})` → `toolResult` のエラー
 （"Invalid timeout: must be a finite number of seconds"）→ 最終テキスト、`stopReason: stop`、88 秒。
 生の出力は [armv7-pi2b-verification.md](armv7-pi2b-verification.md) にあります。
+
+## 2026-11-04：`pi` 1.5.0（upstream v1.5.0 同期後）
+
+同じ Pi 2B で `HOST=pi2@<board> scripts/pi2-armv7/pi2-pi-agent.sh all` を再実行し、
+`@earendil-works/pi-coding-agent@1.5.0` を導入：**検収 11/11 合格**（記録
+`install-20261104-144941.log`）。`pi --version` 5.35 秒（再測定 4.69–6.06 秒）、node 基準 RSS
+39 MiB、パッケージ 158 MB。板内ターン（`-nt`、短い system prompt、`maxTokens: 64`）はコールド
+95.5 秒（モデル呼び出し 84.8 秒）、ウォーム 8.36 秒（1.83 秒）、`stopReason: stop`。既定ツール
+セット（プロンプト 1,326 token、上限 512）は 330 秒で未完了＝prefill 律速（1.4.0 のコールドは
+638 秒）。生の数値は [armv7-pi2b-verification.md](armv7-pi2b-verification.md) の `2026-11-04` 節。

@@ -158,3 +158,14 @@ text instead of calling a tool; a warm turn with an explicit instruction then co
 ("Invalid timeout: must be a finite number of seconds") → final assistant text, `stopReason: stop`,
 88 s, 1.84 tok/s prompt / 1.25 tok/s generation. Raw output is in
 [armv7-pi2b-verification.md](armv7-pi2b-verification.md).
+
+## 2026-11-04: `pi` 1.5.0 (after the upstream v1.5.0 sync)
+
+Re-ran `HOST=pi2@<board> scripts/pi2-armv7/pi2-pi-agent.sh all` on the same Pi 2B with
+`@earendil-works/pi-coding-agent@1.5.0`: **11/11 acceptance checks passed** (log
+`install-20261104-144941.log`). `pi --version` 5.35 s (re-runs 4.69-6.06 s), node baseline RSS
+39 MiB, package 158 MB. A board-local turn with `-nt`, a short system prompt and `maxTokens: 64`
+took 95.5 s cold (model call 84.8 s) and 8.36 s warm (1.83 s), `stopReason: stop`. With the default
+tool set (1,326-token prompt, 512-token cap) a turn did not finish in 330 s — prefill-bound, the
+1.4.0 cold turn measured 638 s. Raw numbers: the `2026-11-04` section of
+[armv7-pi2b-verification.md](armv7-pi2b-verification.md).

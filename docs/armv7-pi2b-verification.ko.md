@@ -151,3 +151,13 @@ node RSS 39 MiB, 여유 612 MiB, `$HOME` 여유 4.0 GB(1.3.0 회차는 4.84–5.
 웜 턴에서는 한 바퀴를 완주했습니다 — `toolCall bash({"command":"uname -m --","timeout":0})` →
 `toolResult` 오류("Invalid timeout: must be a finite number of seconds") → 최종 텍스트,
 `stopReason: stop`, 88초. 원시 출력은 [armv7-pi2b-verification.md](armv7-pi2b-verification.md)에 있습니다.
+
+## 2026-11-04: `pi` 1.5.0 (upstream v1.5.0 동기화 후)
+
+같은 Pi 2B에서 `HOST=pi2@<board> scripts/pi2-armv7/pi2-pi-agent.sh all`을 다시 실행해
+`@earendil-works/pi-coding-agent@1.5.0` 설치: **검수 11/11 통과**(로그 `install-20261104-144941.log`).
+`pi --version` 5.35초(재측정 4.69–6.06초), node 기준 RSS 39 MiB, 패키지 158 MB. 보드 자체 턴
+(`-nt`, 짧은 system prompt, `maxTokens: 64`)은 콜드 95.5초(모델 호출 84.8초), 워밍 8.36초(1.83초),
+`stopReason: stop`. 기본 도구 세트(프롬프트 1,326 token, 상한 512)는 330초 안에 미완료 = prefill
+병목(1.4.0 콜드는 638초). 원수치는 [armv7-pi2b-verification.md](armv7-pi2b-verification.md)의
+`2026-11-04` 절.

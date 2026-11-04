@@ -8,8 +8,8 @@
 경우가 아키텍처 때문에 막히지 않게 하는 것입니다(아래 "이 브랜치의 변경").
 
 - 대상 보드: Raspberry Pi 2 Model B(armv7l, 4×900 MHz, 921 MiB RAM), Raspbian GNU/Linux 13 (trixie)
-- 계측일: **2026-10-27(`@earendil-works/pi-coding-agent@1.4.0`)**｜이전 사이클은 2026-10-20의 1.3.0, 2026-10-06의 1.0.4
-- 동기화 상태: upstream v1.4.0을 따릅니다(`upstream/main` 병합, 뒤처짐 0). 2026-10-27에 Pi 2B에서 1.4.0 실기 검증을 통과했습니다(11/11, docs/armv7-pi2b.md 참조).
+- 계측일: **2026-11-04(`@earendil-works/pi-coding-agent@1.5.0`)**｜이전 사이클은 2026-10-27의 1.4.0, 2026-10-20의 1.3.0, 2026-10-06의 1.0.4
+- 동기화 상태: upstream **v1.5.0**에 동기화됨(`v1.5.0` tag 병합, 뒤처짐 0). `scripts/pi2-armv7/` 기본값은 1.5.0이며 2026-11-04에 Pi 2B에서 1.5.0 실기 검증을 통과했습니다(11/11, docs/armv7-pi2b.md 참조).
 - 원본 로그: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)([한국어 해설](armv7-pi2b-verification.ko.md) 포함)
 - 근거는 **실기 계측**이며 정적 추론이 아닙니다: 승인 검사 11/11 통과
 
@@ -21,7 +21,7 @@
 | --- | --- |
 | **Node 22에는 공식 armv7l 빌드가 있고 Node 23 이상에는 없다** | `nodejs.org/dist/index.json`: v22는 **35/35** 모든 릴리스가 `linux-armv7l`을 포함(22.19 이상 11개 포함, 최신 v22.23.2). 최근 12개 릴리스(v23 이상)에는 없음. 이 저장소는 `engines.node >= 22.19.0`을 요구 → **v22 계열에서만 충족** |
 | **공식 사전 빌드 바이너리에 armv7이 없다** | 릴리스 자산은 `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64`뿐이고 `build-binaries.yml`의 플랫폼 분기도 같은 네 가지뿐 → 공식 tarball은 **사용 불가** |
-| **npm 패키지 경로에는 네이티브 장애물이 없다** | `@earendil-works/pi-coding-agent@1.4.0`: **`os`/`cpu` 제한 없음**, 사전 빌드 CLI 포함(`dist/bundle/*.js`), 의존성은 순수 JS 또는 wasm(`photon-node`가 `photon_rs_bg.wasm` 포함), `canvas`는 `devDependencies`만, 세션 백엔드는 Node 내장 `node:sqlite` |
+| **npm 패키지 경로에는 네이티브 장애물이 없다** | `@earendil-works/pi-coding-agent@1.5.0`: **`os`/`cpu` 제한 없음**, 사전 빌드 CLI 포함(`dist/bundle/*.js`), 의존성은 순수 JS 또는 wasm(`photon-node`가 `photon_rs_bg.wasm` 포함), `canvas`는 `devDependencies`만, 세션 백엔드는 Node 내장 `node:sqlite` |
 
 유일한 기능 손실: TUI의 네이티브 X11/클립보드 helper(`linux-platform-x11.node`)는 x64/arm64
 사전 빌드만 있고, 로더 `packages/tui/src/native-platform.ts`는 다른 아키텍처에서 `undefined`를
@@ -29,7 +29,7 @@
 tools when native reads are unavailable"라고 적고 있으므로 armv7에서 이것은 **설계상 허용된 성능 저하**입니다.
 (크래시는 없고 클립보드/이미지 연동만 사라집니다.)
 
-설치된 1.4.0으로 보드에서 직접 측정:
+설치된 1.5.0으로 보드에서 직접 측정:
 
 ```text
 process.arch = arm, process.platform = linux
@@ -45,14 +45,14 @@ getNativePlatformHelper() -> undefined
 | 실행 사용자 | uid 1000, **sudo 전혀 사용 안 함** (`$HOME`에 설치) |
 | Node | **v22.23.2** (공식 `linux-armv7l` tarball, 26,338,176 bytes) |
 | `node:sqlite` | **사용 가능** → 세션 백엔드에 네이티브 모듈 불필요 |
-| CLI | **`pi --version` → 1.4.0**, `pi --help` 정상 출력 |
-| npm 설치 | `added 3 packages, and changed 118 packages in 2m` (npm 10.9.8, 1.3.0 → 1.4.0 업그레이드) |
+| CLI | **`pi --version` → 1.5.0**, `pi --help` 정상 출력 |
+| npm 설치 | `changed 123 packages in 4m` (npm 10.9.8, 1.4.0 → 1.5.0 재설치 검증. 최초 업그레이드는 `added 2 packages, and changed 121 packages in 3m`) |
 | 동봉 사전 빌드 | `darwin-arm64|x64`, `linux-arm64|x64`, `win32-arm64|x64`뿐 —— **`linux-arm`(armv7) 없음** |
-| 시작 시간 | `pi --version` **4.96초**(설치 시), 재측정 4.95–5.40초 |
-| 메모리 | `node` 기준 RSS **39 MiB** (설치 중 여유 701 MiB, OOM 없음) |
-| 디스크 | Node 187 MB + pi 패키지 156 MB (`$HOME` 여유 4.1 GB) |
+| 시작 시간 | `pi --version` **5.35초**(검증 시), 재측정 4.69–6.06초 |
+| 메모리 | `node` 기준 RSS **39 MiB**, `pi --version` 자식 프로세스 최대 77 MB (여유 587 MiB, OOM 없음) |
+| 디스크 | Node 187 MB + pi 패키지 158 MB (`$HOME` 여유 1.2 GB) |
 
-> 실제 모델 1턴: **2026-10-01에 보드에서 실기 검증했고, 2026-10-27에 1.4.0으로 재검증했습니다**(보드가 직접 `llama-server`를 실행,
+> 실제 모델 1턴: **2026-10-01에 보드에서 실기 검증했고, 2026-10-27에 1.4.0, 2026-11-04에 1.5.0으로 재검증했습니다**(보드가 직접 `llama-server`를 실행,
 > PC나 외부 API 불필요). 절차와 실측값은 8절. pi 0.99.2의 내장 로컬 경로는 `LLAMA_BASE_URL`로
 > 지정하는 llama.cpp router 그대로입니다(LM Studio의 OpenAI 호환 API는 사용하지 않습니다).
 
@@ -70,7 +70,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.4.0
+pi --version                 # 1.5.0
 
 # 3) 영구 적용 (~/.bashrc에 추가)
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -164,4 +164,8 @@ pi 0.99.2는 Pi 2B에서 **모델과 서버를 보드가 직접 실행하는 상
   TTY가 아니면 stdin을 먹으므로 원격에서는 `< /dev/null`을 붙이세요.
 - **실측값**(`-t 4`, 8K ctx, q8_0 KV): 270M Q4는 프롬프트 10.95 tok/s, 생성 2.76 tok/s, 1턴 46초.
   0.5B Q4는 첫 턴 77초(`stopReason: stop`), 워밍 후 16초. llama-server RSS 530 MiB, 보드 여유 636 MiB.
+- **1.5.0 보드 자체 턴(2026-11-04)**: `-nt`＋짧은 system prompt＋`maxTokens: 64`에서 콜드 95.5초
+  (모델 호출 84.8초), 워밍 8.36초(1.83초). 출력 `OK`, `stopReason: stop`. 기본 도구 세트
+  (프롬프트 1,326 token, 출력 상한 512)는 330초 안에 끝나지 않았고(1.4.0 콜드는 638초, prefill 병목),
+  Pi 2B에서는 `-nt`／도구 허용 목록과 작은 `maxTokens`를 쓰세요.
 - 주의: 검증된 것은 **경로**이며 소형 모델의 사실 정확도가 아닙니다(0.5B 응답은 틀렸습니다).

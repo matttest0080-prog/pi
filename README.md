@@ -42,7 +42,7 @@ npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 
 Pi requires Node.js 22.19 or newer. The macOS, Linux, and Windows installers can install it if needed. Pi does not require dependency lifecycle scripts for a normal npm installation.
 
-> **The pi agent itself runs on a Raspberry Pi 2 Model B.** This fork adds 32-bit ARM (ARMv7) support: install Node v22 `armv7l` into `$HOME` (no root) and use the npm command above. Verified on the board (Pi 2B, 921 MiB RAM, pi 1.4.0, 2026-10-27) — see [Platform support: ARMv7 / Raspberry Pi 2](#platform-support-armv7--raspberry-pi-2).
+> **The pi agent itself runs on a Raspberry Pi 2 Model B.** This fork adds 32-bit ARM (ARMv7) support: install Node v22 `armv7l` into `$HOME` (no root) and use the npm command above. Verified on the board (Pi 2B, 921 MiB RAM, pi 1.5.0, 2026-11-04) — see [Platform support: ARMv7 / Raspberry Pi 2](#platform-support-armv7--raspberry-pi-2).
 
 Start Pi in the directory where you want it to work:
 
@@ -93,8 +93,8 @@ For Slack/chat automation and workflows see [earendil-works/pi-chat](https://git
 x64 and arm64 only, and Node ships official `linux-armv7l` builds only on the v22 line, but the CLI
 itself runs on 32-bit ARM. Verified on a Raspberry Pi 2 Model B (ARMv7, 921 MiB RAM, Raspbian 13):
 install Node **v22 armv7l** into `$HOME` (no root), then
-`npm install -g --prefix ~/.local @earendil-works/pi-coding-agent` — the 1.4.0 hardware run on
-2026-10-27 measured `pi --version` in 4.96 s (4.95–5.40 s on re-runs), node RSS 39 MiB, a 156 MB
+`npm install -g --prefix ~/.local @earendil-works/pi-coding-agent` — the 1.5.0 hardware run on
+2026-11-04 measured `pi --version` in 5.35 s (4.69–6.06 s on re-runs), node RSS 39 MiB, a 158 MB
 package, and no native module is needed (`node:sqlite` is built in).
 The TUI's X11/clipboard helper is x64/arm64-only and is skipped by design on other architectures
 (the coding agent falls back to the command-line clipboard tools).

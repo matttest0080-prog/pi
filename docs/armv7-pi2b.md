@@ -7,8 +7,8 @@
 小修改（見下方「本分支的修改」）。
 
 - 目標板：Raspberry Pi 2 Model B（armv7l, 4×900 MHz, 921 MiB RAM），Raspbian GNU/Linux 13 (trixie)
-- 實測日期：**2026-10-27（`@earendil-works/pi-coding-agent@1.4.0`）**｜上一輪 2026-10-20 為 1.3.0、2026-10-06 為 1.0.4
-- 同步狀態：本分支已跟隨 upstream v1.4.0（`upstream/main` 合併，落後 0）；`scripts/pi2-armv7/` 預設 1.4.0，並於 2026-10-27 在 Pi2B 完成 1.4.0 實機驗收（11/11）。
+- 實測日期：**2026-11-04（`@earendil-works/pi-coding-agent@1.5.0`）**｜上一輪 2026-10-27 為 1.4.0、2026-10-20 為 1.3.0、2026-10-06 為 1.0.4
+- 同步狀態：本分支已同步 upstream **v1.5.0**（`v1.5.0` tag 合併，落後 0）；`scripts/pi2-armv7/` 預設 1.5.0，並於 2026-11-04 在 Pi2B 完成 1.5.0 實機驗收（11/11）。
 - 原始記錄：[`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)（導讀：[英](armv7-pi2b-verification.en.md)／[簡中](armv7-pi2b-verification.zh-CN.md)／[日](armv7-pi2b-verification.ja.md)／[韓](armv7-pi2b-verification.ko.md)／[西](armv7-pi2b-verification.es.md)）
 - 其他語言版本見本頁最上方語言列
 - 證據是**實機量測**，不是靜態推論：驗收 11/11 通過
@@ -36,15 +36,15 @@ native reads are unavailable」——所以 armv7 上這是**設計允許的降�
 | 身份 | uid 1000，**全程未用 sudo**（安裝到 `$HOME`） |
 | Node | **v22.23.2**（官方 `linux-armv7l` tarball，26,338,176 bytes） |
 | `node:sqlite` | **可用** → session backend 不需要原生模組 |
-| CLI | **`pi --version` → 1.4.0**；`pi --help` 正常輸出 |
-| npm 安裝 | `added 3 packages, and changed 118 packages in 2m`（npm 10.9.8，1.3.0 → 1.4.0 升級） |
+| CLI | **`pi --version` → 1.5.0**；`pi --help` 正常輸出 |
+| npm 安裝 | `changed 123 packages in 4m`（npm 10.9.8，1.4.0 → 1.5.0 重裝驗收；初次升級為 `added 2 packages, and changed 121 packages in 3m`） |
 | 附帶 prebuild | 只有 `darwin-arm64|x64`、`linux-arm64|x64`、`win32-arm64|x64` —— **沒有 `linux-arm`（armv7）** |
-| 啟動耗時 | `pi --version` **4.96 s**（安裝當次）／重測 4.95–5.40 s（Pi2B 冷啟動） |
-| 記憶體 | `node` 基準 RSS **39 MiB**；安裝時整機可用 701 MiB，未 OOM |
-| 磁碟 | Node 187 MB ＋ pi 套件 156 MB（`$HOME` 尚有 4.1 GB） |
+| 啟動耗時 | `pi --version` **5.35 s**（驗收當次）／重測 4.69、4.70、6.06 s（Pi2B 冷啟動） |
+| 記憶體 | `node` 基準 RSS **39 MiB**；`pi --version` 子行程峰值 77 MB；整機可用 587 MiB，未 OOM |
+| 磁碟 | Node 187 MB ＋ pi 套件 158 MB（`$HOME` 尚有 1.2 GB） |
 
-> 真實模型回合：**已於 2026-10-01 在板子上實機驗證、2026-10-27 以 1.4.0 重驗通過**（板子自己跑 `llama-server`，不需要 PC、
-> 也不需要外部 API），做法與實測值見第 7 節。pi 0.99.2 的內建本機路徑仍是 llama.cpp router
+> 真實模型回合：**已於 2026-10-01 在板子上實機驗證、2026-10-27 以 1.4.0 重驗、2026-11-04 以 1.5.0 再驗通過**（板子自己跑 `llama-server`，不需要 PC、
+> 也不需要外部 API），做法與實測值見第 7 節。pi 的內建本機路徑仍是 llama.cpp router
 > （由 `LLAMA_BASE_URL` 指向，不吃 LM Studio 的 OpenAI 相容 API）。
 
 ## 3. 安裝與使用（適用方式）
@@ -61,7 +61,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.4.0
+pi --version                 # 1.5.0
 
 # 3) 持久化（加進 ~/.bashrc）
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -139,6 +139,10 @@ pi 0.99.2 在 Pi 2B 上以**板子自己執行的模型與伺服器**完成了�
 - **實測值**（Pi 2B、`-t 4`、8K ctx、q8_0 KV）：270M Q4 提示 10.95 tok/s、生成 2.76 tok/s、單回合
   46 s；0.5B Q4 首回合 77 s（`stopReason: stop`、`input 55 / output 19 / total 74`）、暖機後 16 s。
   llama-server 子程序 RSS 530 MiB，板子可用 636 MiB。
+- **1.5.0 板子自足回合（2026-11-04）**：`-nt`＋短 system prompt＋`maxTokens: 64` 時，冷回合
+  95.5 s（模型呼叫 84.8 s）、暖回合 8.36 s（模型呼叫 1.83 s），輸出 `OK`、`stopReason: stop`。
+  同一塊板子用**預設工具集**（提示 1,326 token、輸出上限 512）時，330 s 內未完成（1.4.0 的冷回合
+  量到 638 s，屬 prefill 受限而非 1.5.0 退化）；在 Pi 2B 上請用 `-nt`／工具白名單與小 `maxTokens`。
 - 注意：**鏈路**已驗證，不代表小模型答得對（0.5B 的事實正確率很差，這點不誇大）。
 
 ## English summary
@@ -154,5 +158,6 @@ loses clipboard/image integration but nothing crashes.
 This branch adds two optional enabling changes — `native/linux/build.sh` no longer fails the whole build on
 ARMv7 (it skips with a notice instead of `exit 1`), and the native loader also accepts `arm` so a locally
 built helper would be used — plus the tested install/verify scripts in `scripts/pi2-armv7/` and the raw
-hardware log in `docs/armv7-pi2b-verification.md`. Measured (2026-10-27, 1.4.0): `pi --version` startup 4.96 s
-(4.95–5.40 s on re-runs), node RSS 39 MiB, no OOM, ~156 MB for the package.
+hardware log in `docs/armv7-pi2b-verification.md`. Measured (2026-11-04, 1.5.0): `pi --version` startup 5.35 s
+(4.69–6.06 s on re-runs), node baseline RSS 39 MiB, a board-local turn in 95.5 s cold / 8.4 s warm with
+`-nt`, no OOM, ~158 MB for the package.

@@ -7,8 +7,8 @@
 不被架构卡住（见下方「本分支的修改」）。
 
 - 目标板：Raspberry Pi 2 Model B（armv7l, 4×900 MHz, 921 MiB RAM），Raspbian GNU/Linux 13 (trixie)
-- 实测日期：**2026-10-27（`@earendil-works/pi-coding-agent@1.4.0`）**｜上一轮 2026-10-20 为 1.3.0、2026-10-06 为 1.0.4
-- 同步状态：已跟随 upstream v1.4.0（`upstream/main` 合并，落后 0）；2026-10-27 已在 Pi 2B 完成 1.4.0 实机验收（11/11，见 docs/armv7-pi2b.md）。
+- 实测日期：**2026-11-04（`@earendil-works/pi-coding-agent@1.5.0`）**｜上一轮 2026-10-27 为 1.4.0、2026-10-20 为 1.3.0、2026-10-06 为 1.0.4
+- 同步状态：已同步 upstream **v1.5.0**（`v1.5.0` tag 合并，落后 0）；2026-11-04 已在 Pi 2B 完成 1.5.0 实机验收（11/11，见 docs/armv7-pi2b.md）。
 - 原始记录：[`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)（[简体中文导读](armv7-pi2b-verification.zh-CN.md)）
 - 证据是**实机量测**，不是静态推论：验收 11/11 通过
 
@@ -20,14 +20,14 @@
 | --- | --- |
 | **Node 22 有官方 armv7l 构建，Node 23+ 没有** | `nodejs.org/dist/index.json`：v22 全部 **35/35** 版含 `linux-armv7l`（含 ≥ 22.19 的 11 版，最新 v22.23.2）；最近 12 个版本（v23+）皆无。本 repo 要求 `engines.node >= 22.19.0` → **只能在 v22 线满足** |
 | **官方预编译二进制不含 armv7** | release 资产只有 `linux-x64`／`linux-arm64`／`darwin-x64|arm64`／`windows-x64|arm64`，`build-binaries.yml` 的平台判断同样只列这四个 → 官方 tarball **不可用** |
-| **npm 包路线没有原生障碍** | `@earendil-works/pi-coding-agent@1.4.0`：无 `os`/`cpu` 限制、已含预打包 CLI（`dist/bundle/*.js`）、依赖为纯 JS 或 wasm（`photon-node` 内含 `photon_rs_bg.wasm`）、`canvas` 只在 `devDependencies`、session backend 用 Node 内建 `node:sqlite` |
+| **npm 包路线没有原生障碍** | `@earendil-works/pi-coding-agent@1.5.0`：无 `os`/`cpu` 限制、已含预打包 CLI（`dist/bundle/*.js`）、依赖为纯 JS 或 wasm（`photon-node` 内含 `photon_rs_bg.wasm`）、`canvas` 只在 `devDependencies`、session backend 用 Node 内建 `node:sqlite` |
 
 唯一的功能减损：TUI 的原生 X11／剪贴板 helper（`linux-platform-x11.node`）只有 x64/arm64 预编译，
 且加载器 `packages/tui/src/native-platform.ts` 对其他架构直接返回 `undefined`。
 `packages/tui/native/linux/README.md` 自己写明「Coding-agent falls back to command-line tools when
 native reads are unavailable」——所以在 armv7 上这是**设计允许的降级**，不会崩溃，只是少了剪贴板／图片集成。
 
-在板上用已安装的 1.4.0 实测：
+在板上用已安装的 1.5.0 实测：
 
 ```text
 process.arch = arm, process.platform = linux
@@ -43,14 +43,14 @@ getNativePlatformHelper() -> undefined
 | 身份 | uid 1000，**全程未用 sudo**（安装到 `$HOME`） |
 | Node | **v22.23.2**（官方 `linux-armv7l` tarball，26,338,176 bytes） |
 | `node:sqlite` | **可用** → session backend 不需要原生模块 |
-| CLI | **`pi --version` → 1.4.0**；`pi --help` 正常输出 |
-| npm 安装 | `added 3 packages, and changed 118 packages in 2m`（npm 10.9.8，1.3.0 → 1.4.0 升级） |
+| CLI | **`pi --version` → 1.5.0**；`pi --help` 正常输出 |
+| npm 安装 | `changed 123 packages in 4m`（npm 10.9.8，1.4.0 → 1.5.0 重装验收；初次升级为 `added 2 packages, and changed 121 packages in 3m`） |
 | 附带 prebuild | 只有 `darwin-arm64|x64`、`linux-arm64|x64`、`win32-arm64|x64` —— **没有 `linux-arm`（armv7）** |
-| 启动耗时 | `pi --version` **4.96 s**（安装当次）／重测 4.95–5.40 s（Pi2B 冷启动） |
-| 内存 | `node` 基准 RSS **39 MiB**；安装时整机可用 701 MiB，未 OOM |
-| 磁盘 | Node 187 MB ＋ pi 包 156 MB（`$HOME` 尚有 4.1 GB） |
+| 启动耗时 | `pi --version` **5.35 s**（验收当次）／重测 4.69–6.06 s（Pi2B 冷启动） |
+| 内存 | `node` 基准 RSS **39 MiB**；`pi --version` 子进程峰值 77 MB；整机可用 587 MiB，未 OOM |
+| 磁盘 | Node 187 MB ＋ pi 包 158 MB（`$HOME` 尚有 1.2 GB） |
 
-> 真实模型回合：**已于 2026-10-01 在板子上实机验证、2026-10-27 以 1.4.0 重验通过**（板子自己跑 `llama-server`，不需要 PC 或
+> 真实模型回合：**已于 2026-10-01 在板子上实机验证、2026-10-27 以 1.4.0 重验、2026-11-04 以 1.5.0 再验通过**（板子自己跑 `llama-server`，不需要 PC 或
 > 外部 API），做法与实测值见第 8 节。0.99.2 的内建本机路径仍是 `LLAMA_BASE_URL` 指向的
 > llama.cpp router（不是 LM Studio 的 OpenAI 兼容 API）。
 
@@ -68,7 +68,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.4.0
+pi --version                 # 1.5.0
 
 # 3) 持久化（加进 ~/.bashrc）
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -155,4 +155,8 @@ pi 0.99.2 在 Pi 2B 上用**板子自己执行的模型与伺服器**完成了�
   吃掉 stdin，远程要写 `< /dev/null`。
 - **实测值**（`-t 4`、8K ctx）：270M Q4 提示 10.95 tok/s、生成 2.76 tok/s、单回合 46 s；0.5B Q4
   首回合 77 s（`stopReason: stop`）、暖机后 16 s；llama-server RSS 530 MiB、板子可用 636 MiB。
+- **1.5.0 板子自足回合（2026-11-04）**：`-nt`＋短 system prompt＋`maxTokens: 64` 时，冷回合 95.5 s
+  （模型调用 84.8 s）、暖回合 8.36 s（模型调用 1.83 s），输出 `OK`、`stopReason: stop`。默认工具集
+  （提示 1,326 token、输出上限 512）在 330 s 内未完成；1.4.0 的冷回合量到 638 s，属 prefill 受限。
+  在 Pi 2B 上请用 `-nt`／工具白名单与小 `maxTokens`。
 - 注意：**链路**已验证，不代表小模型答得对（0.5B 事实正确率很差）。

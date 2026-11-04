@@ -149,3 +149,13 @@ fail-closed 验收 11/11、`pi --version` → 1.4.0 用时 4.96 s。之后三次
 `toolCall bash({"command":"uname -m --","timeout":0})` → `toolResult` 报错
 （"Invalid timeout: must be a finite number of seconds"）→ 最终文字、`stopReason: stop`，88 s。
 原始输出见 [armv7-pi2b-verification.md](armv7-pi2b-verification.md)。
+
+## 2026-11-04：`pi` 1.5.0（同步上游 v1.5.0 之后）
+
+在同一块 Pi 2B 上重跑 `HOST=pi2@<board> scripts/pi2-armv7/pi2-pi-agent.sh all`，安装
+`@earendil-works/pi-coding-agent@1.5.0`：**验收 11/11 全过**（记录 `install-20261104-144941.log`）。
+`pi --version` 5.35 s（重测 4.69–6.06 s）、node 基准 RSS 39 MiB、包 158 MB。板子自足回合
+（`-nt`、短 system prompt、`maxTokens: 64`）冷 95.5 s（模型调用 84.8 s）、暖 8.36 s（1.83 s），
+`stopReason: stop`。默认工具集（提示 1,326 token、上限 512）330 s 内未完成：属 prefill 受限，
+1.4.0 冷回合量到 638 s。原始数字见
+[armv7-pi2b-verification.md](armv7-pi2b-verification.md) 的 `2026-11-04` 节。

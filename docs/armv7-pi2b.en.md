@@ -8,8 +8,8 @@ so that "building from source on ARMv7" and "a future ARMv7 native helper" are n
 architecture (see [What this fork changes](#4-what-this-fork-changes)).
 
 - Target board: Raspberry Pi 2 Model B (armv7l, 4x900 MHz, 921 MiB RAM), Raspbian GNU/Linux 13 (trixie)
-- Measured: **2026-10-27 with `@earendil-works/pi-coding-agent@1.4.0`** (previous cycles: 2026-10-20, 1.3.0; 2026-10-06, 1.0.4)
-- Sync status: this branch follows upstream v1.4.0 (`upstream/main` merged, 0 behind). `scripts/pi2-armv7/` defaults to 1.4.0 and the 1.4.0 hardware verification passed on 2026-10-27 (11/11).
+- Measured: **2026-11-04 with `@earendil-works/pi-coding-agent@1.5.0`** (previous cycles: 2026-10-27, 1.4.0; 2026-10-20, 1.3.0; 2026-10-06, 1.0.4)
+- Sync status: this branch is synced to upstream **v1.5.0** (tag `v1.5.0` merged, 0 behind). `scripts/pi2-armv7/` defaults to 1.5.0 and the 1.5.0 hardware verification passed on 2026-11-04 (11/11).
 - Raw board log: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) — with an English guide to
   the same log: [`armv7-pi2b-verification.en.md`](armv7-pi2b-verification.en.md)
 - The evidence is **hardware measurement, not static reasoning**: 11/11 acceptance checks passed
@@ -23,7 +23,7 @@ architecture (see [What this fork changes](#4-what-this-fork-changes)).
 | --- | --- |
 | **Node 22 has official armv7l builds; Node 23+ does not** | `nodejs.org/dist/index.json`: every v22 release ships `linux-armv7l` (**35/35**, including all 11 releases >= 22.19, latest v22.23.2); none of the 12 most recent releases (v23+) do. This repo requires `engines.node >= 22.19.0` → **only the v22 line satisfies it** |
 | **The official prebuilt binaries contain no armv7** | Release assets are `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64` only, and `build-binaries.yml` lists exactly those four platform cases → the official tarball is **not usable** |
-| **The npm package route has no native obstacle** | `@earendil-works/pi-coding-agent@1.4.0`: **no `os`/`cpu` restriction**, ships a prebuilt CLI (`dist/bundle/*.js`), depends only on plain JS or wasm (`photon-node` carries `photon_rs_bg.wasm`), `canvas` is a `devDependency` only, and the session backend uses Node's built-in `node:sqlite` |
+| **The npm package route has no native obstacle** | `@earendil-works/pi-coding-agent@1.5.0`: **no `os`/`cpu` restriction**, ships a prebuilt CLI (`dist/bundle/*.js`), depends only on plain JS or wasm (`photon-node` carries `photon_rs_bg.wasm`), `canvas` is a `devDependency` only, and the session backend uses Node's built-in `node:sqlite` |
 
 The only functional loss: the TUI's native X11/clipboard helper (`linux-platform-x11.node`) ships
 prebuilds for x64/arm64 only, and the loader `packages/tui/src/native-platform.ts` returns `undefined`
@@ -31,7 +31,7 @@ for any other architecture. `packages/tui/native/linux/README.md` states this it
 falls back to command-line tools when native reads are unavailable" — so on ARMv7 this is a
 **documented, intentional degradation**: nothing crashes, it just loses clipboard/image integration.
 
-Measured on the board with the installed npm package (1.4.0 run):
+Measured on the board with the installed npm package (1.5.0 run):
 
 ```text
 process.arch = arm, process.platform = linux
@@ -47,14 +47,14 @@ getNativePlatformHelper() -> undefined
 | Identity | uid 1000, **no sudo anywhere** (installed into `$HOME`) |
 | Node | **v22.23.2** (official `linux-armv7l` tarball, 26,338,176 bytes) |
 | `node:sqlite` | **available** → the session backend needs no native module |
-| CLI | **`pi --version` → 1.4.0**; `pi --help` prints normally |
-| npm install | `added 3 packages, and changed 118 packages in 2m` (npm 10.9.8, upgrade 1.3.0 → 1.4.0) |
+| CLI | **`pi --version` → 1.5.0**; `pi --help` prints normally |
+| npm install | `changed 123 packages in 4m` (npm 10.9.8, 1.4.0 → 1.5.0 reinstall check; the first upgrade was `added 2 packages, and changed 121 packages in 3m`) |
 | Bundled prebuilds | only `darwin-arm64|x64`, `linux-arm64|x64`, `win32-arm64|x64` — **no `linux-arm` (armv7)** |
-| Startup | `pi --version` **4.96 s** (install run), **4.95-5.40 s** on re-runs |
-| Memory | `node` baseline RSS **39 MiB**; 701 MiB available during install, no OOM |
-| Disk | Node 187 MB + pi package 156 MB (4.1 GB free in `$HOME`) |
+| Startup | `pi --version` **5.35 s** (acceptance run), **4.69 / 4.70 / 6.06 s** on re-runs |
+| Memory | `node` baseline RSS **39 MiB**; `pi --version` child peak 77 MB; 587 MiB available, no OOM |
+| Disk | Node 187 MB + pi package 158 MB (1.2 GB free in `$HOME`) |
 
-> Real model turns: **verified on the board on 2026-10-01 and re-verified with 1.4.0 on 2026-10-27**
+> Real model turns: **verified on the board on 2026-10-01, re-verified with 1.4.0 on 2026-10-27 and with 1.5.0 on 2026-11-04**
 > (the Pi runs its own `llama-server`; no PC
 > and no external API). Recipe and measurements: section 8. pi 0.99.2's built-in local path is still
 > the llama.cpp router addressed through `LLAMA_BASE_URL` (it does not talk to LM Studio's
@@ -74,7 +74,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.4.0
+pi --version                 # 1.5.0
 
 # 3) Persist it (append to ~/.bashrc)
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -180,6 +180,11 @@ board itself** - no PC and no external API:
 - **Measurements** (Pi 2B, `-t 4`, 8K ctx, q8_0 KV): 270M Q4 - prompt 10.95 tok/s, generation 2.76
   tok/s, 46 s per turn; 0.5B Q4 - 77 s first turn (`stopReason: stop`, `input 55 / output 19 / total
   74`), 16 s warm. llama-server child RSS 530 MiB with 636 MiB free on the board.
+- **1.5.0 board-local turn (2026-11-04)**: with `-nt`, a short system prompt and `maxTokens: 64`, a cold
+  turn took 95.5 s (model call 84.8 s) and a warm turn 8.36 s (model call 1.83 s), output `OK`,
+  `stopReason: stop`. With the **default tool set** (1,326-token prompt, 512-token output cap) the turn
+  did not finish within 330 s; the 1.4.0 cold turn measured 638 s, so this is prefill-bound, not a 1.5.0
+  regression. On a Pi 2B use `-nt` / a tool allowlist and a small `maxTokens`.
 - Note: the **pipeline** is verified; this says nothing about a small model's factual accuracy (the
   0.5B answers were wrong, and that is not being glossed over).
 

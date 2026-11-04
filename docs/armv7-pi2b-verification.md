@@ -330,3 +330,53 @@ run1 略高是因為它緊接在上一輪 `pi`／`node` 結束後量測（冷啟
 
 量測檔留在板上：`~/measure140-turn1.json`（22,630 bytes）、`~/measure140-turn2.json`
 （34,682 bytes，`sha256 9450ee983aa7c4fa…`）。router 在量測後已停止。
+
+## 2026-11-04：`pi` 1.5.0（同步上游 v1.5.0 之後）
+
+`HOST=pi2@192.168.50.90 scripts/pi2-armv7/pi2-pi-agent.sh all`（probe → install → verify）在同一塊
+Pi 2B 上重跑，安裝 `@earendil-works/pi-coding-agent@1.5.0`；驗收 **11/11** 全過（記錄檔
+`scripts/pi2-armv7/logs/install-20261104-144941.log`）：
+
+```text
+=== 0) 基本環境
+    uname -m = armv7l  |  Raspbian GNU/Linux 13 (trixie)
+    mem: 921 MiB total, 587 MiB available
+    disk $HOME: 1.2G free
+  ✓ 架構是 armv7l（Pi2B）
+  ✓ 以一般使用者執行（uid 1000），全程安裝到 $HOME，不需要 sudo
+
+=== 2) 安裝 pi coding agent
+    npm 10.9.8  |  目標 prefix: /home/<user>/.local
+changed 123 packages in 4m
+  ✓ 已安裝 @earendil-works/pi-coding-agent@1.5.0 到 /home/<user>/.local
+
+=== 3) 驗收
+    pi --version → 1.5.0
+    pi --help   → pi - AI coding assistant with read, bash, edit, write tools
+  ✓ 沒有 linux-arm（armv7）的 prebuild（armv7 走 JS 路徑 ✓）
+
+=== 4) 量測
+    pi --version 耗時 5.35 s
+    node RSS 基準: 39 MiB
+    磁碟：Node 187M｜pi 套件 158M
+```
+
+板子自足回合（`llama-server --models-preset`、`qwen2.5-0.5b-instruct-q4_k_m`、8K ctx、q8_0 KV、
+`-t 4`、`--parallel 1`）：
+
+```text
+# 最小提示（-nt、短 system prompt、models.json maxTokens=64）
+cold  rc=0 wall=95.5 s  model_call=84.8 s  stopReason=stop  text="OK"
+warm  rc=0 wall=8.36 s  model_call=1.83 s  stopReason=stop  text="OK"
+usage: input 1 / output 2 / cacheRead 30 / total 33
+server: eval time = 560.08 ms / 2 tokens (1.79 tok/s)
+        prompt eval time = 712.64 ms / 1 tokens (cache hit)
+
+# 預設工具集（提示 1,326 token、輸出上限 512）
+330 s 內未完成 → 手動中止（1.4.0 的冷回合量到 638 s，屬 prefill 受限）
+```
+
+**結論**：1.5.0 在 Pi 2B 上的安裝與驗收與 1.4.0 相同（11/11），`pi --version` 5.35 s（重測
+4.69–6.06 s）、node 基準 RSS 39 MiB、套件 158 MB。板子自足回合可用，但 1.5.0 的預設工具 schema
+讓提示從約 30 token 變成 1,326 token；Pi 2B 的 prefill 約 2.4 tok/s，因此預設工具集需要數分鐘，
+或改用 `-nt`／工具白名單與小 `maxTokens`。量測後已停止 router、還原 `models.json`。

@@ -8,8 +8,8 @@
 helper を作る」場合がアーキテクチャで止まらないようにするためのものです（下記「このブランチの変更」）。
 
 - 対象ボード：Raspberry Pi 2 Model B（armv7l、4×900 MHz、921 MiB RAM）、Raspbian GNU/Linux 13 (trixie)
-- 計測日：**2026-10-27（`@earendil-works/pi-coding-agent@1.4.0`）**｜前回サイクルは 2026-10-20 の 1.3.0、2026-10-06 の 1.0.4
-- 同期状態：upstream v1.4.0 に追従済み（`upstream/main` をマージ、遅れ 0）。2026-10-27 に Pi 2B で 1.4.0 の実機検証に合格（11/11、docs/armv7-pi2b.md 参照）。
+- 計測日：**2026-11-04（`@earendil-works/pi-coding-agent@1.5.0`）**｜前回サイクルは 2026-10-27 の 1.4.0、2026-10-20 の 1.3.0、2026-10-06 の 1.0.4
+- 同期状態：upstream **v1.5.0** に同期済み（`v1.5.0` tag をマージ、遅れ 0）。`scripts/pi2-armv7/` の既定は 1.5.0 で、2026-11-04 に Pi 2B で 1.5.0 の実機検証に合格（11/11、docs/armv7-pi2b.md 参照）。
 - 生ログ：[`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)（[日本語ガイド](armv7-pi2b-verification.ja.md)付き）
 - 根拠は**実機計測**であり、机上の推論ではありません：受け入れ検査 11/11 合格
 
@@ -21,7 +21,7 @@ helper を作る」場合がアーキテクチャで止まらないようにす�
 | --- | --- |
 | **Node 22 には公式 armv7l ビルドがあり、Node 23 以降には無い** | `nodejs.org/dist/index.json`：v22 は **35/35** すべてのリリースが `linux-armv7l` を含む（22.19 以上の 11 版を含む、最新 v22.23.2）。直近 12 リリース（v23 以降）には無い。このリポジトリは `engines.node >= 22.19.0` を要求 → **v22 系でのみ満たせる** |
 | **公式のプリビルドバイナリに armv7 は無い** | リリース資産は `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64` のみで、`build-binaries.yml` のプラットフォーム判定も同じ 4 つだけ → 公式 tarball は**使えない** |
-| **npm パッケージ経路にネイティブの障害は無い** | `@earendil-works/pi-coding-agent@1.4.0`：**`os`/`cpu` 制限なし**、ビルド済み CLI 同梱（`dist/bundle/*.js`）、依存は純 JS か wasm（`photon-node` が `photon_rs_bg.wasm` を内包）、`canvas` は `devDependencies` のみ、セッション backend は Node 内蔵の `node:sqlite` |
+| **npm パッケージ経路にネイティブの障害は無い** | `@earendil-works/pi-coding-agent@1.5.0`：**`os`/`cpu` 制限なし**、ビルド済み CLI 同梱（`dist/bundle/*.js`）、依存は純 JS か wasm（`photon-node` が `photon_rs_bg.wasm` を内包）、`canvas` は `devDependencies` のみ、セッション backend は Node 内蔵の `node:sqlite` |
 
 唯一の機能低下：TUI のネイティブ X11／クリップボード helper（`linux-platform-x11.node`）は
 x64/arm64 のプリビルドしか無く、ローダー `packages/tui/src/native-platform.ts` はそれ以外の
@@ -29,7 +29,7 @@ x64/arm64 のプリビルドしか無く、ローダー `packages/tui/src/native
 "Coding-agent falls back to command-line tools when native reads are unavailable" と書いており、
 armv7 ではこれが**設計上の許容された縮退**です（クラッシュはせず、クリップボード／画像連携だけが失われます）。
 
-導入済み 1.4.0 を使った実機計測：
+導入済み 1.5.0 を使った実機計測：
 
 ```text
 process.arch = arm, process.platform = linux
@@ -45,14 +45,14 @@ getNativePlatformHelper() -> undefined
 | 実行ユーザー | uid 1000、**sudo は一切不使用**（`$HOME` にインストール） |
 | Node | **v22.23.2**（公式 `linux-armv7l` tarball、26,338,176 bytes） |
 | `node:sqlite` | **利用可** → セッション backend にネイティブモジュール不要 |
-| CLI | **`pi --version` → 1.4.0**、`pi --help` も正常出力 |
-| npm インストール | `added 3 packages, and changed 118 packages in 2m`（npm 10.9.8、1.3.0 → 1.4.0 のアップグレード） |
+| CLI | **`pi --version` → 1.5.0**、`pi --help` も正常出力 |
+| npm インストール | `changed 123 packages in 4m`（npm 10.9.8、1.4.0 → 1.5.0 の再インストール検証。初回更新は `added 2 packages, and changed 121 packages in 3m`） |
 | 同梱プリビルド | `darwin-arm64|x64`、`linux-arm64|x64`、`win32-arm64|x64` のみ —— **`linux-arm`（armv7）は無い** |
-| 起動時間 | `pi --version` **4.96 秒**（インストール時）、再測定 4.95–5.40 秒 |
-| メモリ | `node` の基準 RSS **39 MiB**（インストール時は空き 701 MiB、OOM なし） |
-| ディスク | Node 187 MB ＋ pi パッケージ 156 MB（`$HOME` の空き 4.1 GB） |
+| 起動時間 | `pi --version` **5.35 秒**（検証時）、再測定 4.69–6.06 秒 |
+| メモリ | `node` の基準 RSS **39 MiB**、`pi --version` 子プロセスのピーク 77 MB（空き 587 MiB、OOM なし） |
+| ディスク | Node 187 MB ＋ pi パッケージ 158 MB（`$HOME` の空き 1.2 GB） |
 
-> 実際のモデル 1 ターン：**2026-10-01 に板の上で実機検証済み、2026-10-27 に 1.4.0 で再検証済み**です（板自身が `llama-server` を
+> 実際のモデル 1 ターン：**2026-10-01 に板の上で実機検証済み、2026-10-27 に 1.4.0、2026-11-04 に 1.5.0 で再検証済み**です（板自身が `llama-server` を
 > 動かし、PC も外部 API も不要）。手順と実測値は第 8 節。pi 0.99.2 の内蔵ローカル経路は
 > `LLAMA_BASE_URL` で指す llama.cpp router のままです（LM Studio の OpenAI 互換 API は使いません）。
 
@@ -70,7 +70,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.4.0
+pi --version                 # 1.5.0
 
 # 3) 永続化（~/.bashrc に追記）
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -167,4 +167,8 @@ pi 0.99.2 は Pi 2B 上で、**モデルもサーバーも板自身で動かし�
 - **実測値**（`-t 4`、8K ctx、q8_0 KV）：270M Q4 はプロンプト 10.95 tok/s、生成 2.76 tok/s、1 ターン
   46 秒。0.5B Q4 は初回 77 秒（`stopReason: stop`）、ウォーム後 16 秒。llama-server の RSS 530 MiB、
   板の空き 636 MiB。
+- **1.5.0 の板内ターン（2026-11-04）**：`-nt`＋短い system prompt＋`maxTokens: 64` で、コールド 95.5 秒
+  （モデル呼び出し 84.8 秒）、ウォーム 8.36 秒（1.83 秒）。出力 `OK`、`stopReason: stop`。既定のツール
+  セット（プロンプト 1,326 token、出力上限 512）は 330 秒で未完了（1.4.0 のコールドは 638 秒で、
+  prefill 律速）。Pi 2B では `-nt`／ツール許可リストと小さな `maxTokens` を使ってください。
 - 注意：検証できたのは**経路**であり、小型モデルの事実精度ではありません（0.5B の回答は誤りでした）。

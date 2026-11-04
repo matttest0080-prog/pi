@@ -157,3 +157,14 @@ texto en vez de llamar a una herramienta; un turno en caliente con instrucción 
 circuito: `toolCall bash({"command":"uname -m --","timeout":0})` → error en `toolResult`
 ("Invalid timeout: must be a finite number of seconds") → texto final, `stopReason: stop`, 88 s.
 La salida en bruto está en [armv7-pi2b-verification.md](armv7-pi2b-verification.md).
+
+## 2026-11-04: `pi` 1.5.0 (tras sincronizar upstream v1.5.0)
+
+Se repitió `HOST=pi2@<board> scripts/pi2-armv7/pi2-pi-agent.sh all` en el mismo Pi 2B con
+`@earendil-works/pi-coding-agent@1.5.0`: **11/11 comprobaciones superadas** (registro
+`install-20261104-144941.log`). `pi --version` 5,35 s (repeticiones 4,69-6,06 s), RSS base de node
+39 MiB, paquete 158 MB. Un turno local con `-nt`, system prompt corto y `maxTokens: 64` tardó 95,5 s
+en frío (llamada al modelo 84,8 s) y 8,36 s en caliente (1,83 s), `stopReason: stop`. Con el conjunto
+de herramientas por defecto (prompt de 1.326 tokens, tope 512) no terminó en 330 s: cuello de botella
+de prefill (el turno en frío de 1.4.0 midió 638 s). Números en bruto: sección `2026-11-04` de
+[armv7-pi2b-verification.md](armv7-pi2b-verification.md).

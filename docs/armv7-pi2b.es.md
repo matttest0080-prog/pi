@@ -9,8 +9,8 @@ solo añade dos pequeños cambios "habilitadores" para que «compilar desde el c
 [Qué cambia esta rama](#4-qué-cambia-esta-rama)).
 
 - Placa objetivo: Raspberry Pi 2 Model B (armv7l, 4×900 MHz, 921 MiB de RAM), Raspbian GNU/Linux 13 (trixie)
-- Medición: **2026-10-27 con `@earendil-works/pi-coding-agent@1.4.0`** (ciclos anteriores: 2026-10-20, 1.3.0; 2026-10-06, 1.0.4)
-- Estado de sincronización: sigue upstream v1.4.0 (`upstream/main` fusionado, 0 por detrás); la verificación física de 1.4.0 en Pi 2B pasó el 2026-10-27 (11/11, ver docs/armv7-pi2b.md).
+- Medición: **2026-11-04 con `@earendil-works/pi-coding-agent@1.5.0`** (ciclos anteriores: 2026-10-27, 1.4.0; 2026-10-20, 1.3.0; 2026-10-06, 1.0.4)
+- Estado de sincronización: sincronizado con upstream **v1.5.0** (tag `v1.5.0` fusionado, 0 por detrás); `scripts/pi2-armv7/` usa 1.5.0 por defecto y la verificación física de 1.5.0 en Pi 2B pasó el 2026-11-04 (11/11, ver docs/armv7-pi2b.md).
 - Registro sin procesar: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) (con
   [guía en español](armv7-pi2b-verification.es.md))
 - La evidencia son **mediciones reales de hardware**, no razonamientos estáticos: 11/11 comprobaciones
@@ -23,7 +23,7 @@ solo añade dos pequeños cambios "habilitadores" para que «compilar desde el c
 | --- | --- |
 | **Node 22 tiene compilaciones oficiales para armv7l; Node 23+ no** | `nodejs.org/dist/index.json`: las **35/35** versiones de v22 incluyen `linux-armv7l` (incluidas las 11 que son >= 22.19; la última es v22.23.2); ninguna de las 12 versiones más recientes (v23+) la incluye. Este repositorio exige `engines.node >= 22.19.0` → **solo la línea v22 lo cumple** |
 | **Los binarios precompilados oficiales no incluyen armv7** | Los recursos de la versión son solo `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64`, y `build-binaries.yml` contempla exactamente esos cuatro casos → el tarball oficial **no sirve** |
-| **La ruta del paquete npm no tiene obstáculo nativo** | `@earendil-works/pi-coding-agent@1.4.0`: **sin restricción `os`/`cpu`**, incluye una CLI ya empaquetada (`dist/bundle/*.js`), sus dependencias son JS puro o wasm (`photon-node` incluye `photon_rs_bg.wasm`), `canvas` solo está en `devDependencies` y el backend de sesión usa el `node:sqlite` integrado |
+| **La ruta del paquete npm no tiene obstáculo nativo** | `@earendil-works/pi-coding-agent@1.5.0`: **sin restricción `os`/`cpu`**, incluye una CLI ya empaquetada (`dist/bundle/*.js`), sus dependencias son JS puro o wasm (`photon-node` incluye `photon_rs_bg.wasm`), `canvas` solo está en `devDependencies` y el backend de sesión usa el `node:sqlite` integrado |
 
 La única pérdida funcional: el helper nativo X11/portapapeles de la TUI (`linux-platform-x11.node`)
 solo existe precompilado para x64/arm64, y el cargador `packages/tui/src/native-platform.ts` devuelve
@@ -32,7 +32,7 @@ solo existe precompilado para x64/arm64, y el cargador `packages/tui/src/native-
 **degradación prevista y documentada**: nada se cae, solo se pierde la integración con portapapeles e
 imágenes.
 
-Medido en la placa con el paquete 1.4.0 ya instalado:
+Medido en la placa con el paquete 1.5.0 ya instalado:
 
 ```text
 process.arch = arm, process.platform = linux
@@ -48,14 +48,14 @@ getNativePlatformHelper() -> undefined
 | Identidad | uid 1000, **sin sudo en ningún momento** (todo en `$HOME`) |
 | Node | **v22.23.2** (tarball oficial `linux-armv7l`, 26.338.176 bytes) |
 | `node:sqlite` | **disponible** → el backend de sesión no necesita módulos nativos |
-| CLI | **`pi --version` → 1.4.0**; `pi --help` imprime con normalidad |
-| Instalación npm | `added 3 packages, and changed 118 packages in 2m` (npm 10.9.8, actualización 1.3.0 → 1.4.0) |
+| CLI | **`pi --version` → 1.5.0**; `pi --help` imprime con normalidad |
+| Instalación npm | `changed 123 packages in 4m` (npm 10.9.8, reinstalación 1.4.0 → 1.5.0; la primera actualización fue `added 2 packages, and changed 121 packages in 3m`) |
 | Precompilados incluidos | solo `darwin-arm64|x64`, `linux-arm64|x64`, `win32-arm64|x64` — **ningún `linux-arm` (armv7)** |
-| Arranque | `pi --version` **4,96 s** (instalación), **4,95–5,40 s** en repeticiones |
-| Memoria | RSS base de `node` **39 MiB**; 701 MiB disponibles durante la instalación, sin OOM |
-| Disco | Node 187 MB + paquete pi 156 MB (4,1 GB libres en `$HOME`) |
+| Arranque | `pi --version` **5,35 s** (verificación), **4,69–6,06 s** en repeticiones |
+| Memoria | RSS base de `node` **39 MiB**; pico del hijo `pi --version` 77 MB; 587 MiB disponibles, sin OOM |
+| Disco | Node 187 MB + paquete pi 158 MB (1,2 GB libres en `$HOME`) |
 
-> Turno real de modelo: **verificado en la placa el 2026-10-01 y re-verificado con 1.4.0 el 2026-10-27**
+> Turno real de modelo: **verificado en la placa el 2026-10-01, re-verificado con 1.4.0 el 2026-10-27 y con 1.5.0 el 2026-11-04**
 > (la Pi ejecuta su propio `llama-server`;
 > sin PC y sin API externa). Receta y mediciones: sección 8. La ruta local integrada de pi 0.99.2 sigue
 > siendo el router de llama.cpp vía `LLAMA_BASE_URL` (no usa la API compatible con OpenAI de LM Studio).
@@ -74,7 +74,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.4.0
+pi --version                 # 1.5.0
 
 # 3) Persistencia (añadir a ~/.bashrc)
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -178,5 +178,10 @@ en la propia placa** - sin PC y sin API externa:
 - **Mediciones** (Pi 2B, `-t 4`, 8K ctx, q8_0 KV): 270M Q4 - prompt 10.95 tok/s, generación 2.76 tok/s,
   46 s por turno; 0.5B Q4 - 77 s el primer turno (`stopReason: stop`), 16 s en caliente. RSS del hijo
   llama-server 530 MiB, 636 MiB libres en la placa.
+- **Turno local con 1.5.0 (2026-11-04)**: con `-nt`, un system prompt corto y `maxTokens: 64`, el turno
+  en frío tardó 95,5 s (llamada al modelo 84,8 s) y el caliente 8,36 s (1,83 s), salida `OK`,
+  `stopReason: stop`. Con el **conjunto de herramientas por defecto** (prompt de 1.326 tokens, tope de
+  512) no terminó en 330 s; el turno en frío de 1.4.0 midió 638 s, así que es cuello de botella de
+  prefill, no una regresión de 1.5.0. En un Pi 2B use `-nt` / lista de herramientas y un `maxTokens` bajo.
 - Nota: lo verificado es la **tubería**; no dice nada sobre la exactitud factual de un modelo pequeño
   (las respuestas del 0.5B fueron incorrectas y no se oculta).
