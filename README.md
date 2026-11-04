@@ -42,7 +42,7 @@ npm install -g --ignore-scripts @earendil-works/pi-coding-agent
 
 Pi requires Node.js 22.19 or newer. The macOS, Linux, and Windows installers can install it if needed. Pi does not require dependency lifecycle scripts for a normal npm installation.
 
-> **Runs on a Raspberry Pi 2 Model B.** This fork adds 32-bit ARM (ARMv7) support: install Node v22 `armv7l` into `$HOME` (no root) and use the npm command above. Verified on the board (Pi 2B, 921 MiB RAM, pi 1.4.0, 2026-10-27) — see [Platform support: ARMv7 / Raspberry Pi 2](#platform-support-armv7--raspberry-pi-2).
+> **The pi agent itself runs on a Raspberry Pi 2 Model B.** This fork adds 32-bit ARM (ARMv7) support: install Node v22 `armv7l` into `$HOME` (no root) and use the npm command above. Verified on the board (Pi 2B, 921 MiB RAM, pi 1.4.0, 2026-10-27) — see [Platform support: ARMv7 / Raspberry Pi 2](#platform-support-armv7--raspberry-pi-2).
 
 Start Pi in the directory where you want it to work:
 
