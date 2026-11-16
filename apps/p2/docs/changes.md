@@ -528,4 +528,3 @@ Work found along the way, parked until the object-state redesign (`target-design
 - **Durable:** nested commits hang by convention only (documented, not detected); `AsyncLocalStorage` would be needed
   to detect it. No change planned.
 - **#10959** (remote references accept a foreign ctx): the owner fixes it with a subagent.
-

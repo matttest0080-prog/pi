@@ -431,4 +431,3 @@ This is packaging, **not five new generic registries**. The existing Chord servi
 10. **Client parity:** exact lowest common command/composer/renderer API, and which terminal-only actions get launcher support. How do multi-viewer prompts choose a respondent and unavailable-client actions fail?
 11. **Observability/privacy:** which harness/document facts are public, request/attempt identity, usage ownership and retention limits; how domains expose provenance without private document reads. Full sensitive payload retention must be explicit.
 12. **Required providers/reload:** compatibility and dependency order, behavior when required contribution disappears or schema migrates during work, and rollback boundaries for native/DB changes. Kit rollout does not magically undo external effects.
-
