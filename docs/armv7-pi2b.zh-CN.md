@@ -2,15 +2,15 @@
 
 > 语言／Language：[繁體中文](armv7-pi2b.md) ｜ [English](armv7-pi2b.en.md) ｜ **简体中文** ｜ [日本語](armv7-pi2b.ja.md) ｜ [한국어](armv7-pi2b.ko.md) ｜ [Español](armv7-pi2b.es.md)
 
-**结论：可以运行，已在实体 Pi2B 上量测通过（11/11）。** 不需要修改 agent 的任何代码——
-用**官方 npm 包**安装即可；本分支另外补了两处小改动，让「从源码构建」与「未来的 armv7 原生 helper」
-不被架构卡住（见下方「本分支的修改」）。
+**结论：可以运行；已在实体 Pi2B 上验证官方 npm 套件 v1.5.2。** 运行已发布的 npm 包不需要修改 agent 代码；
+本分支另外补了两处小改动，让「从源码构建」与「未来的 armv7 原生 helper」不被架构卡住（见下方「本分支的修改」）。
+v1.5.0（2026-11-04）和本次 v1.5.2（2026-11-16）的隔离安装器验收均为 11/11 通过。
 
 - 目标板：Raspberry Pi 2 Model B（armv7l, 4×900 MHz, 921 MiB RAM），Raspbian GNU/Linux 13 (trixie)
-- 实测日期：**2026-11-04（`@earendil-works/pi-coding-agent@1.5.0`）**｜上一轮 2026-10-27 为 1.4.0、2026-10-20 为 1.3.0、2026-10-06 为 1.0.4
-- 同步状态：已同步 upstream **v1.5.0**（`v1.5.0` tag 合并，落后 0）；2026-11-04 已在 Pi 2B 完成 1.5.0 实机验收（11/11，见 docs/armv7-pi2b.md）。
-- 原始记录：[`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)（[简体中文导读](armv7-pi2b-verification.zh-CN.md)）
-- 证据是**实机量测**，不是静态推论：验收 11/11 通过
+- 最新实机测试：**2026-11-16，`@earendil-works/pi-coding-agent@1.5.2`**，隔离安装器验收 11/11 通过，另完成本地模型请求测试。
+- 同步状态：fork `main` 已包含 upstream 正式版 **v1.5.2** 及发布后 Kimi K3 测试修正；未纳入 upstream `main` 中其他尚未发布的提交。
+- v1.5.2 测试记录：[`armv7-pi2b-verification-v1.5.2.md`](armv7-pi2b-verification-v1.5.2.md)；旧记录 [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) 是 v1.5.0（2026-11-04）的 11/11 验收。
+- 本次模型测试验证了 CLI 启动及本地模型请求；**未测试工具调用或源码构建**。
 
 ---
 
@@ -20,7 +20,7 @@
 | --- | --- |
 | **Node 22 有官方 armv7l 构建，Node 23+ 没有** | `nodejs.org/dist/index.json`：v22 全部 **35/35** 版含 `linux-armv7l`（含 ≥ 22.19 的 11 版，最新 v22.23.2）；最近 12 个版本（v23+）皆无。本 repo 要求 `engines.node >= 22.19.0` → **只能在 v22 线满足** |
 | **官方预编译二进制不含 armv7** | release 资产只有 `linux-x64`／`linux-arm64`／`darwin-x64|arm64`／`windows-x64|arm64`，`build-binaries.yml` 的平台判断同样只列这四个 → 官方 tarball **不可用** |
-| **npm 包路线没有原生障碍** | `@earendil-works/pi-coding-agent@1.5.0`：无 `os`/`cpu` 限制、已含预打包 CLI（`dist/bundle/*.js`）、依赖为纯 JS 或 wasm（`photon-node` 内含 `photon_rs_bg.wasm`）、`canvas` 只在 `devDependencies`、session backend 用 Node 内建 `node:sqlite` |
+| **npm 包路线没有原生障碍** | `@earendil-works/pi-coding-agent@1.5.2`：无 `os`/`cpu` 限制、已含预打包 CLI（`dist/bundle/*.js`）、依赖为纯 JS 或 wasm（`photon-node` 内含 `photon_rs_bg.wasm`）、`canvas` 只在 `devDependencies`、session backend 用 Node 内建 `node:sqlite` |
 
 唯一的功能减损：TUI 的原生 X11／剪贴板 helper（`linux-platform-x11.node`）只有 x64/arm64 预编译，
 且加载器 `packages/tui/src/native-platform.ts` 对其他架构直接返回 `undefined`。
@@ -35,7 +35,7 @@ getNativeClipboard()      -> undefined
 getNativePlatformHelper() -> undefined
 ```
 
-## 2. 实机量测结果
+## 2. v1.5.0 历史安装器验收数据（2026-11-04）
 
 | 检查 | 实测值 |
 | --- | --- |
@@ -68,7 +68,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.5.0
+pi --version                 # 1.5.2
 
 # 3) 持久化（加进 ~/.bashrc）
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -155,6 +155,11 @@ pi 0.99.2 在 Pi 2B 上用**板子自己执行的模型与伺服器**完成了�
   吃掉 stdin，远程要写 `< /dev/null`。
 - **实测值**（`-t 4`、8K ctx）：270M Q4 提示 10.95 tok/s、生成 2.76 tok/s、单回合 46 s；0.5B Q4
   首回合 77 s（`stopReason: stop`）、暖机后 16 s；llama-server RSS 530 MiB、板子可用 636 MiB。
+- **1.5.2 板上模型回合（2026-11-16）**：在临时 prefix/HOME 安装，未动原有全局 1.5.0。使用板上
+  loopback llama.cpp router、Qwen2.5-0.5B Q4、8K context、`maxTokens: 64` 和隔离 `models.json`，并以
+  `--no-tools --no-session` 执行：冷回合 52 秒，输出 `OK.`；暖回合 10 秒，输出 `no reply.`；两次皆
+  `rc=0`、`stopReason: stop`。回合后可用 RAM 约 675 MiB。采用静态 OpenAI-compatible 本地端点设置，
+  并非 llama.cpp 动态模型探索；只验证请求/响应链路，不代表工具调用或回答质量。临时文件和 server 已清除。
 - **1.5.0 板子自足回合（2026-11-04）**：`-nt`＋短 system prompt＋`maxTokens: 64` 时，冷回合 95.5 s
   （模型调用 84.8 s）、暖回合 8.36 s（模型调用 1.83 s），输出 `OK`、`stopReason: stop`。默认工具集
   （提示 1,326 token、输出上限 512）在 330 s 内未完成；1.4.0 的冷回合量到 638 s，属 prefill 受限。

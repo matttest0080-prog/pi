@@ -2,16 +2,13 @@
 
 > 言語／Language：[繁體中文](armv7-pi2b.md) ｜ [English](armv7-pi2b.en.md) ｜ [简体中文](armv7-pi2b.zh-CN.md) ｜ **日本語** ｜ [한국어](armv7-pi2b.ko.md) ｜ [Español](armv7-pi2b.es.md)
 
-**結論：動きます。実機の Pi2B で計測済み（受け入れ検査 11/11 合格）。** agent 側のコード変更は
-一切不要で、**公式 npm パッケージ**を入れるだけです。このブランチが加えているのは 2 か所の
-「有効化」用の小さな変更だけで、「armv7 でソースからビルドする」場合と「将来 armv7 用のネイティブ
-helper を作る」場合がアーキテクチャで止まらないようにするためのものです（下記「このブランチの変更」）。
+**結論：動きます。公式 npm パッケージ v1.5.2 を実機 Pi2B で検証しました。** 公開済み npm パッケージの実行に agent のコード変更は不要です。このブランチの小さな変更 2 か所は、「armv7 でソースからビルドする」場合と「将来 armv7 用ネイティブ helper を作る」場合がアーキテクチャで止まらないようにするものです（下記「このブランチの変更」）。v1.5.0（2026-11-04）と今回の v1.5.2（2026-11-16）の隔離インストーラー受け入れ検査は、どちらも 11/11 合格です。
 
 - 対象ボード：Raspberry Pi 2 Model B（armv7l、4×900 MHz、921 MiB RAM）、Raspbian GNU/Linux 13 (trixie)
-- 計測日：**2026-11-04（`@earendil-works/pi-coding-agent@1.5.0`）**｜前回サイクルは 2026-10-27 の 1.4.0、2026-10-20 の 1.3.0、2026-10-06 の 1.0.4
-- 同期状態：upstream **v1.5.0** に同期済み（`v1.5.0` tag をマージ、遅れ 0）。`scripts/pi2-armv7/` の既定は 1.5.0 で、2026-11-04 に Pi 2B で 1.5.0 の実機検証に合格（11/11、docs/armv7-pi2b.md 参照）。
-- 生ログ：[`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)（[日本語ガイド](armv7-pi2b-verification.ja.md)付き）
-- 根拠は**実機計測**であり、机上の推論ではありません：受け入れ検査 11/11 合格
+- 最新の実機テスト：**2026-11-16、公開済み `@earendil-works/pi-coding-agent@1.5.2`**。隔離インストーラー検査 11/11 合格、加えてローカルモデル要求をテスト。
+- 同期状態：fork の `main` は upstream 安定版 **v1.5.2** と公開後の Kimi K3 テスト修正を含みます。未公開の upstream `main` の追加コミットは含みません。
+- v1.5.2 レポート：[`armv7-pi2b-verification-v1.5.2.md`](armv7-pi2b-verification-v1.5.2.md)。旧ログ [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) は v1.5.0（2026-11-04、11/11 合格）の記録です。
+- v1.5.2 のモデル検証範囲は CLI 起動とローカルモデル要求で、**ツール呼び出しとソースビルドは未検証**。
 
 ---
 
@@ -21,7 +18,7 @@ helper を作る」場合がアーキテクチャで止まらないようにす�
 | --- | --- |
 | **Node 22 には公式 armv7l ビルドがあり、Node 23 以降には無い** | `nodejs.org/dist/index.json`：v22 は **35/35** すべてのリリースが `linux-armv7l` を含む（22.19 以上の 11 版を含む、最新 v22.23.2）。直近 12 リリース（v23 以降）には無い。このリポジトリは `engines.node >= 22.19.0` を要求 → **v22 系でのみ満たせる** |
 | **公式のプリビルドバイナリに armv7 は無い** | リリース資産は `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64` のみで、`build-binaries.yml` のプラットフォーム判定も同じ 4 つだけ → 公式 tarball は**使えない** |
-| **npm パッケージ経路にネイティブの障害は無い** | `@earendil-works/pi-coding-agent@1.5.0`：**`os`/`cpu` 制限なし**、ビルド済み CLI 同梱（`dist/bundle/*.js`）、依存は純 JS か wasm（`photon-node` が `photon_rs_bg.wasm` を内包）、`canvas` は `devDependencies` のみ、セッション backend は Node 内蔵の `node:sqlite` |
+| **npm パッケージ経路にネイティブの障害は無い** | `@earendil-works/pi-coding-agent@1.5.2`：**`os`/`cpu` 制限なし**、ビルド済み CLI 同梱（`dist/bundle/*.js`）、依存は純 JS か wasm（`photon-node` が `photon_rs_bg.wasm` を内包）、`canvas` は `devDependencies` のみ、セッション backend は Node 内蔵の `node:sqlite` |
 
 唯一の機能低下：TUI のネイティブ X11／クリップボード helper（`linux-platform-x11.node`）は
 x64/arm64 のプリビルドしか無く、ローダー `packages/tui/src/native-platform.ts` はそれ以外の
@@ -37,7 +34,7 @@ getNativeClipboard()      -> undefined
 getNativePlatformHelper() -> undefined
 ```
 
-## 2. 実機での計測結果
+## 2. v1.5.0 の過去の受け入れ検査結果（2026-11-04）
 
 | 検査項目 | 実測値 |
 | --- | --- |
@@ -70,7 +67,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.5.0
+pi --version                 # 1.5.2
 
 # 3) 永続化（~/.bashrc に追記）
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -167,6 +164,7 @@ pi 0.99.2 は Pi 2B 上で、**モデルもサーバーも板自身で動かし�
 - **実測値**（`-t 4`、8K ctx、q8_0 KV）：270M Q4 はプロンプト 10.95 tok/s、生成 2.76 tok/s、1 ターン
   46 秒。0.5B Q4 は初回 77 秒（`stopReason: stop`）、ウォーム後 16 秒。llama-server の RSS 530 MiB、
   板の空き 636 MiB。
+- **v1.5.2 のボード内モデル要求（2026-11-16）**：一時 prefix/HOME にインストールし、既存の全域 1.5.0 は変更していません。ボード上の loopback llama.cpp router、Qwen2.5-0.5B Q4、8K context、`maxTokens: 64`、隔離した `models.json` を使い、`--no-tools --no-session` で実行。コールド要求は 52 秒で `OK.`、ウォーム要求は 10 秒で `no reply.`。両方 `rc=0`、`stopReason: stop`。終了後の空き RAM は約 675 MiB。静的な OpenAI-compatible ローカル endpoint 設定を使っており、llama.cpp の動的モデル探索ではありません。要求／応答経路の検証であり、ツール使用や回答品質の検証ではありません。テスト後に一時ファイルと server を削除しました。
 - **1.5.0 の板内ターン（2026-11-04）**：`-nt`＋短い system prompt＋`maxTokens: 64` で、コールド 95.5 秒
   （モデル呼び出し 84.8 秒）、ウォーム 8.36 秒（1.83 秒）。出力 `OK`、`stopReason: stop`。既定のツール
   セット（プロンプト 1,326 token、出力上限 512）は 330 秒で未完了（1.4.0 のコールドは 638 秒で、

@@ -2,18 +2,17 @@
 
 > Idioma／Language：[繁體中文](armv7-pi2b.md) ｜ [English](armv7-pi2b.en.md) ｜ [简体中文](armv7-pi2b.zh-CN.md) ｜ [日本語](armv7-pi2b.ja.md) ｜ [한국어](armv7-pi2b.ko.md) ｜ **Español**
 
-**Veredicto: sí, funciona — medido en una Pi 2B real (11/11 comprobaciones de aceptación).** No hace
-falta ningún cambio en el código del agente: basta con instalar el **paquete npm oficial**. Esta rama
-solo añade dos pequeños cambios "habilitadores" para que «compilar desde el código fuente en armv7» y
-«un futuro helper nativo para armv7» no queden bloqueados por la arquitectura (véase
-[Qué cambia esta rama](#4-qué-cambia-esta-rama)).
+**Veredicto: sí, funciona — el paquete npm oficial v1.5.2 se probó en una Pi 2B real.** No hace falta
+cambiar el código del agente para ejecutar el paquete publicado. Esta rama añade dos pequeños cambios
+"habilitadores" para que «compilar desde el código fuente en armv7» y «un futuro helper nativo para
+armv7» no queden bloqueados por la arquitectura (véase [Qué cambia esta rama](#4-qué-cambia-esta-rama)).
+Tanto la aceptación aislada de v1.5.0 (2026-11-04) como la actual de v1.5.2 (2026-11-16) superaron 11/11 comprobaciones.
 
 - Placa objetivo: Raspberry Pi 2 Model B (armv7l, 4×900 MHz, 921 MiB de RAM), Raspbian GNU/Linux 13 (trixie)
-- Medición: **2026-11-04 con `@earendil-works/pi-coding-agent@1.5.0`** (ciclos anteriores: 2026-10-27, 1.4.0; 2026-10-20, 1.3.0; 2026-10-06, 1.0.4)
-- Estado de sincronización: sincronizado con upstream **v1.5.0** (tag `v1.5.0` fusionado, 0 por detrás); `scripts/pi2-armv7/` usa 1.5.0 por defecto y la verificación física de 1.5.0 en Pi 2B pasó el 2026-11-04 (11/11, ver docs/armv7-pi2b.md).
-- Registro sin procesar: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) (con
-  [guía en español](armv7-pi2b-verification.es.md))
-- La evidencia son **mediciones reales de hardware**, no razonamientos estáticos: 11/11 comprobaciones
+- Prueba de hardware más reciente: **2026-11-16 con `@earendil-works/pi-coding-agent@1.5.2`**; la aceptación del instalador aislado pasó 11/11, además de probar solicitudes a un modelo local.
+- Estado de sincronización: `main` del fork incluye la versión estable upstream **v1.5.2** y la corrección de prueba Kimi K3 posterior a su publicación; no incluye otros commits aún no publicados de upstream `main`.
+- Informe de v1.5.2: [`armv7-pi2b-verification-v1.5.2.md`](armv7-pi2b-verification-v1.5.2.md); el registro anterior [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) documenta la aceptación v1.5.0 (2026-11-04, 11/11).
+- La prueba del modelo v1.5.2 verificó el inicio de la CLI y solicitudes locales; **no probó llamadas a herramientas ni compilación desde código fuente**.
 
 ---
 
@@ -23,7 +22,7 @@ solo añade dos pequeños cambios "habilitadores" para que «compilar desde el c
 | --- | --- |
 | **Node 22 tiene compilaciones oficiales para armv7l; Node 23+ no** | `nodejs.org/dist/index.json`: las **35/35** versiones de v22 incluyen `linux-armv7l` (incluidas las 11 que son >= 22.19; la última es v22.23.2); ninguna de las 12 versiones más recientes (v23+) la incluye. Este repositorio exige `engines.node >= 22.19.0` → **solo la línea v22 lo cumple** |
 | **Los binarios precompilados oficiales no incluyen armv7** | Los recursos de la versión son solo `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64`, y `build-binaries.yml` contempla exactamente esos cuatro casos → el tarball oficial **no sirve** |
-| **La ruta del paquete npm no tiene obstáculo nativo** | `@earendil-works/pi-coding-agent@1.5.0`: **sin restricción `os`/`cpu`**, incluye una CLI ya empaquetada (`dist/bundle/*.js`), sus dependencias son JS puro o wasm (`photon-node` incluye `photon_rs_bg.wasm`), `canvas` solo está en `devDependencies` y el backend de sesión usa el `node:sqlite` integrado |
+| **La ruta del paquete npm no tiene obstáculo nativo** | `@earendil-works/pi-coding-agent@1.5.2`: **sin restricción `os`/`cpu`**, incluye una CLI ya empaquetada (`dist/bundle/*.js`), sus dependencias son JS puro o wasm (`photon-node` incluye `photon_rs_bg.wasm`), `canvas` solo está en `devDependencies` y el backend de sesión usa el `node:sqlite` integrado |
 
 La única pérdida funcional: el helper nativo X11/portapapeles de la TUI (`linux-platform-x11.node`)
 solo existe precompilado para x64/arm64, y el cargador `packages/tui/src/native-platform.ts` devuelve
@@ -40,7 +39,7 @@ getNativeClipboard()      -> undefined
 getNativePlatformHelper() -> undefined
 ```
 
-## 2. Mediciones en la placa
+## 2. Mediciones históricas de aceptación v1.5.0 (2026-11-04)
 
 | Comprobación | Valor medido |
 | --- | --- |
@@ -74,7 +73,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.5.0
+pi --version                 # 1.5.2
 
 # 3) Persistencia (añadir a ~/.bashrc)
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -178,6 +177,13 @@ en la propia placa** - sin PC y sin API externa:
 - **Mediciones** (Pi 2B, `-t 4`, 8K ctx, q8_0 KV): 270M Q4 - prompt 10.95 tok/s, generación 2.76 tok/s,
   46 s por turno; 0.5B Q4 - 77 s el primer turno (`stopReason: stop`), 16 s en caliente. RSS del hijo
   llama-server 530 MiB, 636 MiB libres en la placa.
+- **Turnos locales con 1.5.2 (2026-11-16)**: se instaló en un prefijo y HOME temporales; la instalación
+  global 1.5.0 existente no se modificó. Con el router llama.cpp local, Qwen2.5-0.5B Q4, contexto de 8K,
+  `maxTokens: 64` y un `models.json` aislado, usando `--no-tools --no-session`: la petición en frío tardó
+  52 s y devolvió `OK.`; la caliente tardó 10 s y devolvió `no reply.`; ambas terminaron con `rc=0` y
+  `stopReason: stop`. Quedaban unos 675 MiB de RAM disponibles. Se usó una configuración estática de
+  endpoint local compatible con OpenAI, no el descubrimiento dinámico de llama.cpp; se valida la ruta
+  petición/respuesta, no el uso de herramientas ni la calidad. Se borraron los temporales y se detuvo el servidor.
 - **Turno local con 1.5.0 (2026-11-04)**: con `-nt`, un system prompt corto y `maxTokens: 64`, el turno
   en frío tardó 95,5 s (llamada al modelo 84,8 s) y el caliente 8,36 s (1,83 s), salida `OK`,
   `stopReason: stop`. Con el **conjunto de herramientas por defecto** (prompt de 1.326 tokens, tope de

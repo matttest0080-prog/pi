@@ -2,16 +2,13 @@
 
 > 언어／Language：[繁體中文](armv7-pi2b.md) ｜ [English](armv7-pi2b.en.md) ｜ [简体中文](armv7-pi2b.zh-CN.md) ｜ [日本語](armv7-pi2b.ja.md) ｜ **한국어** ｜ [Español](armv7-pi2b.es.md)
 
-**결론: 실행됩니다. 실물 Pi2B에서 계측으로 확인했습니다(승인 검사 11/11 통과).** agent 코드는
-전혀 수정할 필요가 없고 **공식 npm 패키지**를 설치하면 됩니다. 이 브랜치가 추가한 것은 두 군데의
-작은 "활성화" 변경뿐이며, 목적은 "armv7에서 소스로 빌드"와 "나중에 armv7 네이티브 helper를 만드는"
-경우가 아키텍처 때문에 막히지 않게 하는 것입니다(아래 "이 브랜치의 변경").
+**결론: 실행됩니다. 공식 npm 패키지 v1.5.2를 실물 Pi2B에서 검증했습니다.** 공개 npm 패키지 실행에는 agent 코드 수정이 필요 없습니다. 이 브랜치의 작은 변경 두 곳은 "armv7에서 소스로 빌드"와 "향후 armv7 네이티브 helper 제작"이 아키텍처 때문에 막히지 않도록 합니다(아래 "이 브랜치의 변경"). v1.5.0(2026-11-04)과 이번 v1.5.2(2026-11-16)의 격리 설치기 승인 검사는 모두 11/11 통과했습니다.
 
 - 대상 보드: Raspberry Pi 2 Model B(armv7l, 4×900 MHz, 921 MiB RAM), Raspbian GNU/Linux 13 (trixie)
-- 계측일: **2026-11-04(`@earendil-works/pi-coding-agent@1.5.0`)**｜이전 사이클은 2026-10-27의 1.4.0, 2026-10-20의 1.3.0, 2026-10-06의 1.0.4
-- 동기화 상태: upstream **v1.5.0**에 동기화됨(`v1.5.0` tag 병합, 뒤처짐 0). `scripts/pi2-armv7/` 기본값은 1.5.0이며 2026-11-04에 Pi 2B에서 1.5.0 실기 검증을 통과했습니다(11/11, docs/armv7-pi2b.md 참조).
-- 원본 로그: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)([한국어 해설](armv7-pi2b-verification.ko.md) 포함)
-- 근거는 **실기 계측**이며 정적 추론이 아닙니다: 승인 검사 11/11 통과
+- 최신 실기 테스트: **2026-11-16, 공개된 `@earendil-works/pi-coding-agent@1.5.2`**. 격리 설치기 승인 11/11 통과, 별도로 로컬 모델 요청도 테스트했습니다.
+- 동기화 상태: fork `main`은 upstream 정식 **v1.5.2**와 릴리스 후 Kimi K3 테스트 수정을 포함합니다. 아직 공개되지 않은 upstream `main`의 추가 커밋은 포함하지 않습니다.
+- v1.5.2 보고서: [`armv7-pi2b-verification-v1.5.2.md`](armv7-pi2b-verification-v1.5.2.md); 이전 로그 [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md)는 v1.5.0(2026-11-04, 11/11 통과) 기록입니다.
+- v1.5.2 모델 테스트 범위는 CLI 시작과 로컬 모델 요청이며, **도구 호출과 소스 빌드는 테스트하지 않았습니다**.
 
 ---
 
@@ -21,7 +18,7 @@
 | --- | --- |
 | **Node 22에는 공식 armv7l 빌드가 있고 Node 23 이상에는 없다** | `nodejs.org/dist/index.json`: v22는 **35/35** 모든 릴리스가 `linux-armv7l`을 포함(22.19 이상 11개 포함, 최신 v22.23.2). 최근 12개 릴리스(v23 이상)에는 없음. 이 저장소는 `engines.node >= 22.19.0`을 요구 → **v22 계열에서만 충족** |
 | **공식 사전 빌드 바이너리에 armv7이 없다** | 릴리스 자산은 `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64`뿐이고 `build-binaries.yml`의 플랫폼 분기도 같은 네 가지뿐 → 공식 tarball은 **사용 불가** |
-| **npm 패키지 경로에는 네이티브 장애물이 없다** | `@earendil-works/pi-coding-agent@1.5.0`: **`os`/`cpu` 제한 없음**, 사전 빌드 CLI 포함(`dist/bundle/*.js`), 의존성은 순수 JS 또는 wasm(`photon-node`가 `photon_rs_bg.wasm` 포함), `canvas`는 `devDependencies`만, 세션 백엔드는 Node 내장 `node:sqlite` |
+| **npm 패키지 경로에는 네이티브 장애물이 없다** | `@earendil-works/pi-coding-agent@1.5.2`: **`os`/`cpu` 제한 없음**, 사전 빌드 CLI 포함(`dist/bundle/*.js`), 의존성은 순수 JS 또는 wasm(`photon-node`가 `photon_rs_bg.wasm` 포함), `canvas`는 `devDependencies`만, 세션 백엔드는 Node 내장 `node:sqlite` |
 
 유일한 기능 손실: TUI의 네이티브 X11/클립보드 helper(`linux-platform-x11.node`)는 x64/arm64
 사전 빌드만 있고, 로더 `packages/tui/src/native-platform.ts`는 다른 아키텍처에서 `undefined`를
@@ -37,7 +34,7 @@ getNativeClipboard()      -> undefined
 getNativePlatformHelper() -> undefined
 ```
 
-## 2. 보드 실측 결과
+## 2. v1.5.0 과거 설치기 승인 검사 결과(2026-11-04)
 
 | 검사 | 실측값 |
 | --- | --- |
@@ -70,7 +67,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.5.0
+pi --version                 # 1.5.2
 
 # 3) 영구 적용 (~/.bashrc에 추가)
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -164,6 +161,7 @@ pi 0.99.2는 Pi 2B에서 **모델과 서버를 보드가 직접 실행하는 상
   TTY가 아니면 stdin을 먹으므로 원격에서는 `< /dev/null`을 붙이세요.
 - **실측값**(`-t 4`, 8K ctx, q8_0 KV): 270M Q4는 프롬프트 10.95 tok/s, 생성 2.76 tok/s, 1턴 46초.
   0.5B Q4는 첫 턴 77초(`stopReason: stop`), 워밍 후 16초. llama-server RSS 530 MiB, 보드 여유 636 MiB.
+- **v1.5.2 보드 로컬 모델 요청(2026-11-16)**: 임시 prefix/HOME에 설치했고 기존 전역 1.5.0은 변경하지 않았습니다. 보드의 loopback llama.cpp router, Qwen2.5-0.5B Q4, 8K context, `maxTokens: 64`, 격리된 `models.json`을 사용해 `--no-tools --no-session`으로 실행했습니다. 콜드 요청은 52초 후 `OK.`, 워밍 요청은 10초 후 `no reply.`를 반환했고 둘 다 `rc=0`, `stopReason: stop`이었습니다. 종료 후 가용 RAM은 약 675 MiB였습니다. 정적 OpenAI-compatible 로컬 endpoint 설정을 사용했으며 llama.cpp 동적 모델 탐색은 아닙니다. 요청/응답 경로만 검증했으며 도구 사용이나 응답 품질 검증은 아닙니다. 임시 파일과 server는 제거했습니다.
 - **1.5.0 보드 자체 턴(2026-11-04)**: `-nt`＋짧은 system prompt＋`maxTokens: 64`에서 콜드 95.5초
   (모델 호출 84.8초), 워밍 8.36초(1.83초). 출력 `OK`, `stopReason: stop`. 기본 도구 세트
   (프롬프트 1,326 token, 출력 상한 512)는 330초 안에 끝나지 않았고(1.4.0 콜드는 638초, prefill 병목),
