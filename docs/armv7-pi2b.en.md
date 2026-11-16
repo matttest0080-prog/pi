@@ -2,17 +2,17 @@
 
 > Language／語言：[繁體中文](armv7-pi2b.md) ｜ [**English**](armv7-pi2b.en.md) ｜ [简体中文](armv7-pi2b.zh-CN.md) ｜ [日本語](armv7-pi2b.ja.md) ｜ [한국어](armv7-pi2b.ko.md) ｜ [Español](armv7-pi2b.es.md)
 
-**Verdict: yes, it runs — measured on a physical Pi 2B (11/11 acceptance checks).** No agent source
-changes are required: install the **official npm package**. This branch adds two small enabling changes
-so that "building from source on ARMv7" and "a future ARMv7 native helper" are not blocked by the
-architecture (see [What this fork changes](#4-what-this-fork-changes)).
+**Verdict: yes, it runs — `@earendil-works/pi-coding-agent@1.5.2` was tested on a physical Pi 2B.**
+No agent source changes are required to run the published npm package. This branch adds two small
+enabling changes so that "building from source on ARMv7" and "a future ARMv7 native helper" are not
+blocked by the architecture (see [What this fork changes](#4-what-this-fork-changes)). Both the v1.5.0
+(2026-11-04) and current v1.5.2 (2026-11-16) isolated installer runs passed all 11 acceptance checks.
 
 - Target board: Raspberry Pi 2 Model B (armv7l, 4x900 MHz, 921 MiB RAM), Raspbian GNU/Linux 13 (trixie)
-- Measured: **2026-11-04 with `@earendil-works/pi-coding-agent@1.5.0`** (previous cycles: 2026-10-27, 1.4.0; 2026-10-20, 1.3.0; 2026-10-06, 1.0.4)
-- Sync status: this branch is synced to upstream **v1.5.0** (tag `v1.5.0` merged, 0 behind). `scripts/pi2-armv7/` defaults to 1.5.0 and the 1.5.0 hardware verification passed on 2026-11-04 (11/11).
-- Raw board log: [`armv7-pi2b-verification.md`](armv7-pi2b-verification.md) — with an English guide to
-  the same log: [`armv7-pi2b-verification.en.md`](armv7-pi2b-verification.en.md)
-- The evidence is **hardware measurement, not static reasoning**: 11/11 acceptance checks passed
+- Latest hardware test: **2026-11-16 with the published `@earendil-works/pi-coding-agent@1.5.2`**, installed into an isolated prefix and HOME.
+- Sync status: the fork's `main` includes upstream stable **v1.5.2** plus the upstream post-release Kimi K3 test correction. Further unreleased upstream `main` commits are not included.
+- Current v1.5.2 report: [`armv7-pi2b-verification-v1.5.2.md`](armv7-pi2b-verification-v1.5.2.md) records 11/11 isolated installer acceptance and the separate local-model test.
+- The v1.5.2 model test verified CLI startup and local-model requests; it did **not** test tool calls or a source build.
 - 繁體中文原版：[`armv7-pi2b.md`](armv7-pi2b.md)
 
 ---
@@ -23,7 +23,7 @@ architecture (see [What this fork changes](#4-what-this-fork-changes)).
 | --- | --- |
 | **Node 22 has official armv7l builds; Node 23+ does not** | `nodejs.org/dist/index.json`: every v22 release ships `linux-armv7l` (**35/35**, including all 11 releases >= 22.19, latest v22.23.2); none of the 12 most recent releases (v23+) do. This repo requires `engines.node >= 22.19.0` → **only the v22 line satisfies it** |
 | **The official prebuilt binaries contain no armv7** | Release assets are `linux-x64` / `linux-arm64` / `darwin-x64|arm64` / `windows-x64|arm64` only, and `build-binaries.yml` lists exactly those four platform cases → the official tarball is **not usable** |
-| **The npm package route has no native obstacle** | `@earendil-works/pi-coding-agent@1.5.0`: **no `os`/`cpu` restriction**, ships a prebuilt CLI (`dist/bundle/*.js`), depends only on plain JS or wasm (`photon-node` carries `photon_rs_bg.wasm`), `canvas` is a `devDependency` only, and the session backend uses Node's built-in `node:sqlite` |
+| **The npm package route has no native obstacle** | `@earendil-works/pi-coding-agent@1.5.2`: **no `os`/`cpu` restriction**, ships a prebuilt CLI (`dist/bundle/*.js`), depends only on plain JS or wasm (`photon-node` carries `photon_rs_bg.wasm`), `canvas` is a `devDependency` only, and the session backend uses Node's built-in `node:sqlite` |
 
 The only functional loss: the TUI's native X11/clipboard helper (`linux-platform-x11.node`) ships
 prebuilds for x64/arm64 only, and the loader `packages/tui/src/native-platform.ts` returns `undefined`
@@ -39,7 +39,7 @@ getNativeClipboard()      -> undefined
 getNativePlatformHelper() -> undefined
 ```
 
-## 2. Measured on the board
+## 2. Historical v1.5.0 acceptance measurements (2026-11-04)
 
 | Check | Measured |
 | --- | --- |
@@ -74,7 +74,7 @@ ln -sfn ~/opt/node-v22.23.2-linux-armv7l ~/opt/node22
 export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"
 node -v                      # v22.23.2
 npm install -g --prefix ~/.local @earendil-works/pi-coding-agent
-pi --version                 # 1.5.0
+pi --version                 # 1.5.2
 
 # 3) Persist it (append to ~/.bashrc)
 echo 'export PATH="$HOME/opt/node22/bin:$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -180,6 +180,14 @@ board itself** - no PC and no external API:
 - **Measurements** (Pi 2B, `-t 4`, 8K ctx, q8_0 KV): 270M Q4 - prompt 10.95 tok/s, generation 2.76
   tok/s, 46 s per turn; 0.5B Q4 - 77 s first turn (`stopReason: stop`, `input 55 / output 19 / total
   74`), 16 s warm. llama-server child RSS 530 MiB with 636 MiB free on the board.
+- **1.5.2 board-local turns (2026-11-16)**: installed in a temporary prefix and HOME; the existing
+  global 1.5.0 install was left untouched. Using the board's loopback llama.cpp router, Qwen2.5-0.5B
+  Q4, 8K context and `maxTokens: 64` in an isolated `models.json`, with `--no-tools --no-session`,
+  the cold request completed in 52 s with `OK.` and the warm request in 10 s with `no reply.`; both
+  returned `rc=0` and `stopReason: stop`. About 675 MiB RAM was available afterward. The test used a
+  static OpenAI-compatible local endpoint configuration, not llama.cpp dynamic model discovery; it
+  verifies the request/response path, not tool use or response quality. Temporary files and the server
+  were removed after the run.
 - **1.5.0 board-local turn (2026-11-04)**: with `-nt`, a short system prompt and `maxTokens: 64`, a cold
   turn took 95.5 s (model call 84.8 s) and a warm turn 8.36 s (model call 1.83 s), output `OK`,
   `stopReason: stop`. With the **default tool set** (1,326-token prompt, 512-token output cap) the turn
@@ -190,6 +198,4 @@ board itself** - no PC and no external API:
 
 ## 中文摘要（Chinese summary）
 
-**結論：可以跑，已在實體 Pi2B 上量測通過（11/11），不需要改動 agent 程式碼。** 唯一功能減損是 TUI 的原生
-X11／剪貼簿 helper（x64/arm64 才有預編譯），armv7 上由載入器跳過、走命令列 fallback。本分支只加了兩處
-「使能」修改，讓 armv7 上從原始碼建置不會整包失敗。完整中文說明見 [`armv7-pi2b.md`](armv7-pi2b.md)。
+**結論：官方 npm 套件 v1.5.2 已在實體 Pi2B 上完成隔離安裝，安裝器驗收 11/11 通過，另完成本機模型請求測試。** 模型測試未測工具呼叫或原始碼建置；v1.5.0（2026-11-04）的安裝器也曾 11/11 通過。armv7 上 TUI 原生 X11／剪貼簿 helper 仍由載入器略過並回退至命令列工具。本分支只加了兩處「使能」修改，讓 armv7 從原始碼建置不會整包失敗。完整中文說明見 [`armv7-pi2b.md`](armv7-pi2b.md)。
