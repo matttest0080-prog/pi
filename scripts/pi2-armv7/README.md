@@ -36,6 +36,7 @@ the board at that tag — that is what `install-pi-on-pi2.sh` pins by default. T
 | `v1.3.0` | `b0d4b0f86` | `v1.3.0` | `71023aec1` | 1.3.0 (2026-10-20) |
 | `v1.4.0` | `ebe43370c` | `v1.4.0` | `4a080252f` | 1.4.0 (2026-10-27) |
 | `v1.5.0` | `6143fb1c5` | `v1.5.0` | `f9a263655` | 1.5.0 (2026-11-04) |
+| `v1.5.2` | `052570024` | `v1.5.2` | `b4afdddf4` | 1.5.2 (2026-11-16, installer 11/11; local model, tools off) |
 
 The fork reuses upstream's version numbers, so a local `v1.x.y` here is **the fork's** annotated tag —
 its message records the upstream tag's commit. Upstream tags are therefore shadowed by name; fetch
